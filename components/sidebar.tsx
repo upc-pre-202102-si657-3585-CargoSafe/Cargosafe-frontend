@@ -46,6 +46,7 @@ interface SidebarProps {
   onLogout?: () => void;
   mobileOpen?: boolean;
   setMobileOpen?: (open: boolean) => void;
+  
 }
 
 export function Sidebar({ 
