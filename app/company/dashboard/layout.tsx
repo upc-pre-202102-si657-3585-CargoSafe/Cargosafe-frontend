@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sidebar } from '@/components/sidebar';
-import { Navbar } from '@/components/Navbar';
-import { UserRole } from '@/app/interfaces';
+
 
 export default function CompanyDashboardLayout({
 	children,

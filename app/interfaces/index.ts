@@ -41,7 +41,7 @@ export interface SignInResponse {
   id: number;
   username: string;
   token: string;
-  roles: string[];
+  role: string;
 }
 
 /**

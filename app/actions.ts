@@ -1,7 +1,6 @@
 "use server";
 
-import { API_ENDPOINTS } from "@/app/config/api";
-import { SignInRequest, SignUpRequest, SignInResponse, SignUpResponse, UserRole } from "@/app/interfaces";
+import { SignInRequest, SignUpRequest, UserRole } from "@/app/interfaces";
 import { Message } from "@/app/components/form-message";
 import { AuthService } from "@/lib/auth";
 
@@ -113,8 +112,7 @@ export async function signInAction(formData: FormData): Promise<Message | { succ
       const cookieExpirySeconds = rememberMe ? 30 * 24 * 60 * 60 : undefined; // 30 días si "recordarme" está activado
       
       // Determinar el rol principal del usuario (el primero en la lista)
-      const userRole = data.roles[0];
-      
+      const userRole = data.role;
       // Determinar ruta de redirección
       let redirectPath = '/';
       
