@@ -18,6 +18,9 @@ interface StaticMapProps {
   priority?: boolean;
 }
 
+// Definir la URL base de Google Static Maps API
+const GOOGLE_STATIC_MAP_BASE_URL = "https://maps.googleapis.com/maps/api/staticmap";
+
 /**
  * Componente para mostrar un mapa estático con Google Maps Static API
  * Útil para vistas previas de mapas sin interacción
@@ -43,7 +46,7 @@ export const StaticMap: React.FC<StaticMapProps> = ({
     typeof destinationCoords.lat === 'number' && 
     typeof destinationCoords.lng === 'number';
   
-  // Obtener la API key desde las variables de entorno
+  // La clave apiKey debe obtenerse de variable de entorno/config centralizada, no hardcodeada
   const apiKey = process.env.NEXT_PUBLIC_API_GOOGLE;
   
   if (!apiKey || !hasValidCoords) {
@@ -61,8 +64,10 @@ export const StaticMap: React.FC<StaticMapProps> = ({
     );
   }
 
+
+  
   // Construir la URL del mapa estático
-  let staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=${width}x${height}&zoom=${zoom}&key=${apiKey}`;
+  let staticMapUrl = `${GOOGLE_STATIC_MAP_BASE_URL}?size=${width}x${height}&zoom=${zoom}&key=${apiKey}`;
   
   // Añadir marcadores si es necesario
   if (showMarkers) {
@@ -78,14 +83,15 @@ export const StaticMap: React.FC<StaticMapProps> = ({
   return (
     <Card className={`overflow-hidden ${className}`}>
       <div className="relative" style={{ width, height }}>
-        <Image
-          src={staticMapUrl}
-          alt={alt}
-          fill
-          sizes={`${width}px`}
-          className="object-cover"
-          priority={priority}
-        />
+      <img
+  src={staticMapUrl}
+  alt={alt}
+  width={width}
+  height={height}
+  className="object-cover w-full h-full"
+  loading={priority ? "eager" : "lazy"}
+  style={{ objectFit: "cover" }}
+/>
       </div>
     </Card>
   );

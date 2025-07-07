@@ -70,6 +70,7 @@ let scriptLoadPromise: Promise<void> | null = null;
 let loadAttempts = 0;
 const MAX_LOAD_ATTEMPTS = 3;
 
+
 /**
  * Carga el script de Google Maps de forma asíncrona
  * Con control para evitar cargas múltiples y reintentos
@@ -156,7 +157,8 @@ export const loadGoogleMapsScript = (): Promise<void> => {
     // Crear el script y agregarlo al documento
     try {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry&callback=initGoogleMaps&loading=async`;
+      const GOOGLE_MAPS_JS_API_BASE_URL = "https://maps.googleapis.com/maps/api/js";
+      script.src = `${GOOGLE_MAPS_JS_API_BASE_URL}?key=${apiKey}&libraries=places,geometry&callback=initGoogleMaps&loading=async`;
       script.async = true;
       script.defer = true;
 

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { API_ENDPOINTS, APP_CONFIG, AuthUtils } from '@/app/config/api';
 import { RequestService as RequestServiceType, CreateRequestServiceRequest } from '@/app/interfaces';
 import { StatusName } from "@/app/interfaces";
+import {jwtDecode} from "jwt-decode";
 // Configurar axios con timeout extendido
 axios.defaults.timeout = APP_CONFIG.API_TIMEOUTS;
 
@@ -155,23 +156,37 @@ export const RequestServiceManager = {
      */
     createRequestService: async (requestData: CreateRequestServiceRequest): Promise<RequestServiceType> => {
         try {
-            // Sincronizar token para asegurar consistencia entre cookies y localStorage
             if (typeof window !== 'undefined') {
                 AuthUtils.syncToken();
             }
-            
-            // Verificar autenticación - Requisito obligatorio
             if (!AuthUtils.isAuthenticated()) {
                 throw new Error("Se requiere iniciar sesión para crear solicitudes de servicio");
             }
-
-            // Verificar campos requeridos
             if (!requestData.type || !requestData.unloadDirection || !requestData.unloadDate) {
                 throw new Error("Faltan campos requeridos: tipo de servicio, dirección de descarga o fecha");
             }
+            // Obtener el userId autenticado desde cookie/localStorage
+            let userId: number | null = null;
+            if (typeof window !== "undefined") {
+                let userInfo = null;
+                const userInfoCookie = AuthUtils.getCookie("userInfo");
+                if (userInfoCookie) {
+                    try {
+                        userInfo = JSON.parse(decodeURIComponent(userInfoCookie));
+                    } catch {}
+                } else {
+                    const userInfoStorage = localStorage.getItem("userInfo");
+                    if (userInfoStorage) {
+                        try {
+                            userInfo = JSON.parse(userInfoStorage);
+                        } catch {}
+                    }
+                }
+                userId = userInfo?.id ? Number(userInfo.id) : null;
+            }
+            if (!userId) throw new Error("No se pudo obtener el userId autenticado");
 
-            // Convertir valores numéricos explícitamente para asegurar formato correcto
-            // Limpiar y normalizar textos para evitar problemas de codificación UTF-8
+            // Armar el body exactamente como el ejemplo
             const formattedData = {
                 unloadDirection: String(requestData.unloadDirection).trim(),
                 type: String(requestData.type).trim(),
@@ -183,7 +198,7 @@ export const RequestServiceManager = {
                 unloadLocation: String(requestData.unloadLocation || "").trim(),
                 unloadDate: String(requestData.unloadDate).trim(),
                 distance: Number(requestData.distance || 0),
-                statusId: Number(requestData.statusId || 1),
+                statusId: Number(requestData.statusId || 3), // 3 = Pending por defecto
                 holderName: String(requestData.holderName || "").trim(),
                 pickupAddress: String(requestData.pickupAddress || "").trim(),
                 pickupLat: Number(requestData.pickupLat || 0),
@@ -192,7 +207,8 @@ export const RequestServiceManager = {
                 destinationLat: Number(requestData.destinationLat || 0),
                 destinationLng: Number(requestData.destinationLng || 0),
                 loadDetail: String(requestData.loadDetail || "").trim(),
-                weight: String(requestData.weight || "").trim()
+                weight: String(requestData.weight || "").trim(),
+                userId
             };
             
             console.log('Creando solicitud de servicio con datos:', formattedData);

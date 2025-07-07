@@ -125,7 +125,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             <FormItem>
               <FormLabel>URL de Foto</FormLabel>
               <FormControl>
-                <Input placeholder="https://ejemplo.com/foto.jpg" {...field} />
+                <Input placeholder="URL de la foto del vehículo" {...field} />
               </FormControl>
               <FormDescription>
                 URL de una imagen del vehículo (opcional)

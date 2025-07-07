@@ -28,9 +28,9 @@ export default function RequestServiceLayout({
           showMenuButton={true}
         />
         
-        <div className="container mx-auto">
-          {children}
-        </div>
+        <div className="flex justify-center items-start min-h-[80vh] py-10 px-2 bg-background">
+      <div className="w-full max-w-3xl">{children}</div>
+    </div>
       </main>
     </div>
   );

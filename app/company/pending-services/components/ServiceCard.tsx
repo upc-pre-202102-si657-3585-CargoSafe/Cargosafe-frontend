@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,20 +82,53 @@ export const ServiceCard = ({
     lng: service.destinationLng || 0
   };
 
+  // Normalización robusta del estado (soporta string u objeto)
+  let statusNameRaw = typeof service.status === "string"
+    ? service.status
+    : (service.status?.name || "PENDING");
+  let statusName = String(statusNameRaw).toUpperCase();
+  if (statusName === "REJECTED" || statusName === "RECHAZADO") statusName = "CANCELLED";
+  if (statusName === "APPROVED") statusName = "ACCEPTED";
 
-  const statusName = service?.status?.name || "PENDING";
   const statusLabel = statusName === "PENDING" ? "Pendiente" : 
                       statusName === "ACCEPTED" ? "Aceptado" : 
                       statusName === "IN_PROGRESS" ? "En progreso" : 
                       statusName === "COMPLETED" ? "Completado" : 
-                      statusName === "CANCELLED" ? "Cancelado" : "Pendiente";
+                      statusName === "CANCELLED" ? "Rechazado" : "Pendiente";
   
-  const statusColor = statusName === "PENDING" ? "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/30 dark:text-yellow-300" : 
-                     statusName === "ACCEPTED" ? "bg-green-500/20 text-green-700 dark:bg-green-500/30 dark:text-green-300" : 
-                     statusName === "IN_PROGRESS" ? "bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300" : 
-                     statusName === "COMPLETED" ? "bg-purple-500/20 text-purple-700 dark:bg-purple-500/30 dark:text-purple-300" : 
-                     statusName === "CANCELLED" ? "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300" : 
-                     "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/30 dark:text-yellow-300";
+  const statusColor = statusName === "PENDING"
+    ? "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/30 dark:text-yellow-300"
+    : statusName === "ACCEPTED"
+    ? "bg-green-600 text-green-50"
+    : statusName === "CANCELLED"
+    ? "bg-red-600 text-red-50"
+    : statusName === "IN_PROGRESS"
+    ? "bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300"
+    : statusName === "COMPLETED"
+    ? "bg-purple-500/20 text-purple-700 dark:bg-purple-500/30 dark:text-purple-300"
+    : "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/30 dark:text-yellow-300";
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Handler para aceptar
+  const handleAccept = async () => {
+    setIsProcessing(true);
+    try {
+      await onAccept(service.id);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handler para rechazar
+  const handleReject = async () => {
+    setIsProcessing(true);
+    try {
+      await onReject(service.id);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <motion.div
@@ -133,12 +166,37 @@ export const ServiceCard = ({
                 </CardDescription>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="text-destructive border-destructive"
+                onClick={handleReject}
+                disabled={isProcessing || statusName === "CANCELLED"}
+                aria-label="Rechazar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="text-green-600 border-green-600"
+                onClick={handleAccept}
+                disabled={isProcessing || statusName === "ACCEPTED"}
+                aria-label="Aceptar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </Button>
               <Button 
                 variant="ghost" 
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => onToggleExpansion(service.id)}
+                aria-label="Ver detalles"
               >
                 <Eye className="h-4 w-4" />
               </Button>
@@ -168,17 +226,7 @@ export const ServiceCard = ({
             
             {/* Mapa estático de previsualización */}
             <div className="hidden md:block">
-              {!isExpanded && hasValidCoordinates && (
-                <MemoizedStaticMap 
-                  originCoords={originCoords}
-                  destinationCoords={destinationCoords}
-                  width={150}
-                  height={80}
-                  zoom={10}
-                  className="rounded-md overflow-hidden"
-                  key={`static-map-${service.id}`}
-                />
-              )}
+             
               {!isExpanded && !hasValidCoordinates && (
                 <div className="w-[150px] h-[80px] bg-muted rounded-md flex items-center justify-center">
                   <span className="text-xs text-muted-foreground">Mapa no disponible</span>
@@ -189,11 +237,13 @@ export const ServiceCard = ({
           
           <AnimatePresence>
             {isExpanded && (
-              <ServiceDetail 
-                service={service} 
-                onAccept={onAccept}
-                onReject={onReject}
-              />
+              <>
+                <ServiceDetail 
+                  service={service} 
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                />
+              </>
             )}
           </AnimatePresence>
         </CardContent>

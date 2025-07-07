@@ -48,38 +48,10 @@ export default function PendingServicesPage() {
       setError(null);
       
       try {
-
         const services = await RequestServiceManager.getRequestServices();
         console.log("Servicios obtenidos de la API:", services);
         
         setPendingServices(services);
-        
-        /*
-        // Filtrar solo las solicitudes con estado PENDING
-        // Algunos servicios pueden no tener un estado definido o tener una estructura diferente
-        const pendingOnly = services.filter(service => {
-          // Log para depuración
-          console.log("Servicio:", service.id, "Estado:", service?.status?.name || "No definido");
-          
-          // Si el servicio no tiene estado, lo incluimos (asumimos que es pendiente)
-          if (!service.status || !service.status.name) {
-            return true;
-          }
-          
-          // Si el estado es PENDING, lo incluimos
-          return service.status.name === StatusName.PENDING;
-        });
-        
-        console.log("Servicios pendientes filtrados:", pendingOnly);
-        
-        // Si no hay servicios pendientes pero sí hay servicios, mostrar todos
-        if (pendingOnly.length === 0 && services.length > 0) {
-          console.log("No se encontraron servicios PENDING, mostrando todos los servicios");
-          setPendingServices(services);
-        } else {
-          setPendingServices(pendingOnly);
-        }
-        */
       } catch (err: any) {
         console.error("Error al obtener servicios pendientes:", err);
         setError(err.message || "Error al cargar los servicios pendientes");
@@ -112,19 +84,16 @@ export default function PendingServicesPage() {
     try {
       const serviceToUpdate = pendingServices.find(service => service.id === id);
       if (!serviceToUpdate) return;
-      
       await RequestServiceManager.updateRequestService(id, {
-        statusId: 2, 
+        statusId: 1, // 1 = Accepted
       });
-      
-      setPendingServices(prev => 
-        prev.map(service => 
-          service.id === id 
-            ? { ...service, status: { id: 2, name: StatusName.ACCEPTED } } 
+      setPendingServices(prev =>
+        prev.map(service =>
+          service.id === id
+            ? { ...service, status: { id: 1, name: StatusName.ACCEPTED } }
             : service
         )
       );
-      
       setSelectedServices(prev => prev.filter(serviceId => serviceId !== id));
     } catch (err: any) {
       console.error("Error al aceptar el servicio:", err);
@@ -136,15 +105,16 @@ export default function PendingServicesPage() {
     try {
       const serviceToUpdate = pendingServices.find(service => service.id === id);
       if (!serviceToUpdate) return;
-      
       await RequestServiceManager.updateRequestService(id, {
-        statusId: 5, 
+        statusId: 2, // 2 = Rejected
       });
-      
-      setPendingServices(prev => 
-        prev.filter(service => service.id !== id)
+      setPendingServices(prev =>
+        prev.map(service =>
+          service.id === id
+            ? { ...service, status: { id: 2, name: StatusName.REJECTED } }
+            : service
+        )
       );
-      
       setSelectedServices(prev => prev.filter(serviceId => serviceId !== id));
     } catch (err: any) {
       console.error("Error al rechazar el servicio:", err);
@@ -171,13 +141,9 @@ export default function PendingServicesPage() {
   const handleRefresh = async () => {
     setLoading(true);
     setError(null);
-    
     try {
       const services = await RequestServiceManager.getRequestServices();
-      const pendingOnly = services.filter(service => 
-        service?.status?.name === StatusName.PENDING
-      );
-      setPendingServices(pendingOnly);
+      setPendingServices(services);
     } catch (err: any) {
       console.error("Error al actualizar servicios:", err);
       setError(err.message || "Error al actualizar los servicios");
