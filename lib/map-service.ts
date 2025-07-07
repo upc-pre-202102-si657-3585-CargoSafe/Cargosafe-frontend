@@ -33,7 +33,7 @@ interface GoogleMapsDuration {
 interface GoogleMapsDirectionsLeg {
   distance: GoogleMapsDistance;
   duration: GoogleMapsDuration;
-  steps: any[];
+  steps: unknown[];
 }
 
 interface GoogleMapsPolyline {
@@ -58,7 +58,7 @@ interface GoogleMapsGeocoderResult {
 // Declarar window.google como any para evitar errores de tipado
 declare global {
   interface Window {
-    google: any;
+    google: unknown;
     initGoogleMaps: () => void;
     googleMapsLoaded: boolean;
   }
@@ -231,7 +231,7 @@ export const calculateRoute = async (origin: LatLng, destination: LatLng): Promi
           destination: destination,
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
-        (result: GoogleMapsDirectionsResult, status: any) => {
+        (result: GoogleMapsDirectionsResult, status: unknown) => {
           if (status === window.google.maps.DirectionsStatus.OK && result) {
             const route = result.routes[0];
             const leg = route.legs[0];
@@ -304,7 +304,7 @@ export const geocodeAddress = async (address: string): Promise<LatLng> => {
         
         geocoder.geocode(
           { address }, 
-          (results: GoogleMapsGeocoderResult[], status: any) => {
+          (results: GoogleMapsGeocoderResult[], status: unknown) => {
             if (status === window.google.maps.GeocoderStatus.OK && results && results[0]) {
               const location = results[0].geometry.location;
               resolve({

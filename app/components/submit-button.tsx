@@ -8,7 +8,7 @@ type SubmitButtonProps = {
   children: React.ReactNode;
   pendingText?: string;
   className?: string;
-  formAction?: (formData: FormData) => Promise<any>;
+  formAction?: (formData: FormData) => void | Promise<void>;
   disabled?: boolean;
   size?: 'default' | 'sm' | 'lg';
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';

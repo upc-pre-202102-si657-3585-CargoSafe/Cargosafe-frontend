@@ -56,7 +56,7 @@ export const AuthService = {
         useCache: true, 
       });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   },

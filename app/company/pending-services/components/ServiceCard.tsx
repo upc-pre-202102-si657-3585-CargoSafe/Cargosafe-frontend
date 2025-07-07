@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RequestService, StatusName } from "@/app/interfaces";
+import { RequestService } from "@/app/interfaces";
 import { Eye, MapPin, Package, Calendar, Weight } from "lucide-react";
 import { ServiceDetail } from "./ServiceDetail";
 import { formatDateConsistently } from "../utils/dateUtils";
@@ -44,9 +44,6 @@ interface ServiceCardProps {
   onReject: (id: number) => void;
 }
 
-
-const MemoizedStaticMap = memo(StaticMap);
-
 export const ServiceCard = ({ 
   service, 
   index, 
@@ -72,18 +69,8 @@ export const ServiceCard = ({
     !isNaN(service.destinationLat) && !isNaN(service.destinationLng)
   );
 
-  const originCoords = {
-    lat: service.pickupLat || 0,
-    lng: service.pickupLng || 0
-  };
-  
-  const destinationCoords = {
-    lat: service.destinationLat || 0,
-    lng: service.destinationLng || 0
-  };
-
   // Normalización robusta del estado (soporta string u objeto)
-  let statusNameRaw = typeof service.status === "string"
+  const statusNameRaw = typeof service.status === "string"
     ? service.status
     : (service.status?.name || "PENDING");
   let statusName = String(statusNameRaw).toUpperCase();

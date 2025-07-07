@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { loadGoogleMapsScript, calculateRoute, LatLng, RouteInfo } from "@/lib/map-service";
+import { loadGoogleMapsScript, LatLng, RouteInfo } from "@/lib/map-service";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Navigation, Info } from "lucide-react";
@@ -38,14 +38,14 @@ const Maps: React.FC<MapsProps> = ({
   className = "",
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<unknown>(null);
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
   // Referencias para los marcadores y el renderizador de rutas
-  const markersRef = useRef<any[]>([]);
-  const directionsRendererRef = useRef<any>(null);
+  const markersRef = useRef<unknown[]>([]);
+  const directionsRendererRef = useRef<unknown>(null);
   
   // ID único para este componente de mapa
   const mapId = useMemo(() => `map-${Math.random().toString(36).substr(2, 9)}`, []);
@@ -92,7 +92,7 @@ const Maps: React.FC<MapsProps> = ({
   // Cargar el script de Google Maps y inicializar el mapa
   useEffect(() => {
     let isMounted = true;
-    let mapObjectInstance: any = null;
+    let mapObjectInstance: unknown = null;
     
     const initMap = async () => {
       try {
@@ -196,7 +196,7 @@ const Maps: React.FC<MapsProps> = ({
         mapInstance.setCenter(originCoords);
   
         // Crear marcadores
-        let originMarker, destinationMarker;
+        let originMarker: unknown, destinationMarker: unknown;
 
         // Intentar usar siempre AdvancedMarkerElement, incluso con try-catch para compatibilidad
         try {
@@ -217,7 +217,7 @@ const Maps: React.FC<MapsProps> = ({
           } else {
             throw new Error("AdvancedMarkerElement no disponible");
           }
-        } catch (e) {
+        } catch (e: unknown) {
           // Fallback al marcador tradicional solo si es necesario
           console.warn("Fallback a marcadores tradicionales:", e);
           originMarker = new window.google.maps.Marker({
@@ -265,7 +265,7 @@ const Maps: React.FC<MapsProps> = ({
                 destination: destinationCoords,
                 travelMode: window.google.maps.TravelMode.DRIVING,
               },
-              (result: any, status: any) => {
+              (result: unknown, status: unknown) => {
                 if (!isMounted) return;
                 
                 if (status === window.google.maps.DirectionsStatus.OK && result) {
@@ -295,18 +295,18 @@ const Maps: React.FC<MapsProps> = ({
                         duration: distance * 1.3 / 50 * 60, // Estimación de tiempo (50 km/h)
                         polyline: "",
                       });
-                    } catch (e) {
+                    } catch (e: unknown) {
                       console.error("Error al calcular distancia alternativa:", e);
                     }
                   }
                 }
               }
             );
-          } catch (routeError) {
+          } catch (routeError: unknown) {
             console.error("Error al configurar la ruta:", routeError);
           }
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Error al dibujar en el mapa:", err);
         if (isMounted) {
           setError("Ocurrió un error al mostrar el mapa. Por favor, intenta de nuevo.");

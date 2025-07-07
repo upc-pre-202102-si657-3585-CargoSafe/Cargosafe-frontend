@@ -52,9 +52,13 @@ export default function PendingServicesPage() {
         console.log("Servicios obtenidos de la API:", services);
         
         setPendingServices(services);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        let errorMsg = "Error al obtener servicios pendientes";
+        if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
+          errorMsg = (err as any).message;
+        }
         console.error("Error al obtener servicios pendientes:", err);
-        setError(err.message || "Error al cargar los servicios pendientes");
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -95,9 +99,13 @@ export default function PendingServicesPage() {
         )
       );
       setSelectedServices(prev => prev.filter(serviceId => serviceId !== id));
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMsg = "Error al aceptar el servicio";
+      if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
+        errorMsg = (err as any).message;
+      }
       console.error("Error al aceptar el servicio:", err);
-      setError(`Error al aceptar el servicio: ${err.message}`);
+      setError(`Error al aceptar el servicio: ${errorMsg}`);
     }
   };
 
@@ -116,9 +124,13 @@ export default function PendingServicesPage() {
         )
       );
       setSelectedServices(prev => prev.filter(serviceId => serviceId !== id));
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMsg = "Error al rechazar el servicio";
+      if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
+        errorMsg = (err as any).message;
+      }
       console.error("Error al rechazar el servicio:", err);
-      setError(`Error al rechazar el servicio: ${err.message}`);
+      setError(`Error al rechazar el servicio: ${errorMsg}`);
     }
   };
 
@@ -144,9 +156,13 @@ export default function PendingServicesPage() {
     try {
       const services = await RequestServiceManager.getRequestServices();
       setPendingServices(services);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMsg = "Error al actualizar los servicios";
+      if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
+        errorMsg = (err as any).message;
+      }
       console.error("Error al actualizar servicios:", err);
-      setError(err.message || "Error al actualizar los servicios");
+      setError(errorMsg || "Error al actualizar los servicios");
     } finally {
       setLoading(false);
     }

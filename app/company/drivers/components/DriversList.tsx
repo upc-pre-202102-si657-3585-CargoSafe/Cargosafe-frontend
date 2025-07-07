@@ -1,6 +1,6 @@
 import React from 'react';
 import { Driver } from '@/app/interfaces';
-import { Loader2, AlertCircle, Users, Search } from 'lucide-react';
+import { Loader2, Users, Search } from 'lucide-react';
 import { DriversRow } from './DriversRow';
 import { Button } from '@/components/ui/button';
 

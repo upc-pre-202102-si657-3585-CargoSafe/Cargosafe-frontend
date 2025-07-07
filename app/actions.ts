@@ -34,7 +34,7 @@ export async function signUpAction(formData: FormData): Promise<Message> {
 
     try {
       // Usar el servicio de autenticación optimizado
-      const data = await AuthService.signUp(signUpData);
+      await AuthService.signUp(signUpData);
       
       // Registrar tiempo total de procesamiento
       const endTime = performance.now();
@@ -108,9 +108,6 @@ export async function signInAction(formData: FormData): Promise<Message | { succ
 
       console.log("[SignIn] Inicio de sesión exitoso para:", data.username);
       
-      // Establecer opciones de la cookie
-      const cookieExpirySeconds = rememberMe ? 30 * 24 * 60 * 60 : undefined; // 30 días si "recordarme" está activado
-      
       // Determinar el rol principal del usuario (el primero en la lista)
       const userRole = data.role;
       // Determinar ruta de redirección
@@ -139,28 +136,16 @@ export async function signInAction(formData: FormData): Promise<Message | { succ
           rememberMe: rememberMe
         }
       };
-    } catch (error) {
+    } catch (_) {
       // Manejo de errores mejorado con mensajes más específicos
       let errorMessage = "Error de conexión al servidor. Por favor, intenta más tarde.";
-      
-      if (error instanceof Error) {
-        if (error.message.includes('excedió el tiempo de espera')) {
-          errorMessage = "El servidor está tardando demasiado en responder. Por favor, intenta más tarde.";
-        } else if (error.message.includes('404')) {
-          errorMessage = "Usuario no encontrado. Verifica tus credenciales.";
-        } else if (error.message.includes('401')) {
-          errorMessage = "Credenciales incorrectas. Verifica tu email y contraseña.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
       
       return {
         type: "error",
         text: errorMessage
       };
     }
-  } catch (error) {
+  } catch (_) {
     return {
       type: "error",
       text: "Ocurrió un error durante el inicio de sesión"

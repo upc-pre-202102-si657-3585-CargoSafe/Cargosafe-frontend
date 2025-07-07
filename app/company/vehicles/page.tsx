@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import { API_ENDPOINTS, AuthUtils } from "@/app/config/api";
+import { AuthUtils } from "@/app/config/api";
 import { VehicleService } from "@/app/services/vehicle-service";
 
 import { Vehicle } from "@/app/interfaces";

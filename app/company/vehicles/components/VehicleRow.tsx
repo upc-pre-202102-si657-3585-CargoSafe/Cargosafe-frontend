@@ -4,7 +4,6 @@ import { Vehicle } from "@/app/interfaces";
 import { Truck, MoreVertical, Pencil, Trash, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TableCell, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TableCell } from "@/components/ui/table";
 
 interface VehicleRowProps {
   vehicle: Vehicle;

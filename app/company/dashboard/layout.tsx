@@ -10,15 +10,6 @@ export default function CompanyDashboardLayout({
 }>) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-	const handleLogout = () => {
-		console.log('Cerrar sesión');
-		window.location.href = '/sign-in';
-	};
-
-	const toggleMobileMenu = () => {
-		setMobileMenuOpen(!mobileMenuOpen);
-	};
-
 	return (
 		<div className="flex min-h-screen bg-background">
 		
