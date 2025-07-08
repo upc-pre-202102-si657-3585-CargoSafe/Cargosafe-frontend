@@ -24,6 +24,8 @@ interface TrackingMapProps {
   showCurrentLocation?: boolean;
 }
 
+type MaybeAdvancedMarker = { map?: google.maps.Map | null };
+
 const TrackingMap: React.FC<TrackingMapProps> = ({
   vehicleLocations,
   centerLocation,
@@ -57,11 +59,11 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
         markersRef.current.forEach(marker => {
           if (marker && typeof marker === 'object') {
             try {
-              if ('setMap' in marker && typeof (marker as any).setMap === 'function') {
+              if ('setMap' in marker && typeof (marker as google.maps.Marker).setMap === 'function') {
                 (marker as google.maps.Marker).setMap(null);
               } else if ('map' in marker && !(marker instanceof google.maps.Marker)) {
                 // Solo para AdvancedMarkerElement
-                (marker as any).map = null;
+                (marker as MaybeAdvancedMarker).map = null;
               }
             } catch (e) {
               console.warn("Error al limpiar marcador individual:", e);
@@ -74,10 +76,10 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
       // Limpiar marcador de usuario
       if (userMarkerRef.current && typeof userMarkerRef.current === 'object') {
         try {
-          if ('setMap' in userMarkerRef.current && typeof (userMarkerRef.current as any).setMap === 'function') {
+          if ('setMap' in userMarkerRef.current && typeof (userMarkerRef.current as google.maps.Marker).setMap === 'function') {
             (userMarkerRef.current as google.maps.Marker).setMap(null);
           } else if ('map' in userMarkerRef.current && !(userMarkerRef.current instanceof google.maps.Marker)) {
-            (userMarkerRef.current as any).map = null;
+            (userMarkerRef.current as MaybeAdvancedMarker).map = null;
           }
           userMarkerRef.current = null;
         } catch (e) {
@@ -126,10 +128,10 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
     // Eliminar marcador anterior si existe
     if (userMarkerRef.current) {
       try {
-        if ('setMap' in userMarkerRef.current && typeof (userMarkerRef.current as any).setMap === 'function') {
+        if ('setMap' in userMarkerRef.current && typeof (userMarkerRef.current as google.maps.Marker).setMap === 'function') {
           (userMarkerRef.current as google.maps.Marker).setMap(null);
         } else if ('map' in userMarkerRef.current && !(userMarkerRef.current instanceof google.maps.Marker)) {
-          (userMarkerRef.current as any).map = null;
+          (userMarkerRef.current as MaybeAdvancedMarker).map = null;
         }
       } catch (e) {
         console.warn("Error al eliminar marcador de usuario:", e);

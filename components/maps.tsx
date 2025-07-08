@@ -24,6 +24,8 @@ interface MapsProps {
   className?: string;
 }
 
+type MaybeAdvancedMarker = { map?: google.maps.Map | null };
+
 /**
  * Componente de Google Maps para mostrar ubicaciones y rutas
  */
@@ -66,10 +68,10 @@ const Maps: React.FC<MapsProps> = ({
         markersRef.current.forEach(marker => {
           if (marker && typeof marker === 'object') {
             try {
-              if ('setMap' in marker && typeof marker.setMap === 'function') {
-                marker.setMap(null);
+              if ('setMap' in marker && typeof (marker as google.maps.Marker).setMap === 'function') {
+                (marker as google.maps.Marker).setMap(null);
               } else if ('map' in marker) {
-                (marker as any).map = null;
+                (marker as MaybeAdvancedMarker).map = null;
               }
             } catch (e) {
               console.warn("Error al limpiar marcador individual:", e);
