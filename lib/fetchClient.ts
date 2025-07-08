@@ -9,6 +9,10 @@ const CACHE_EXPIRY = 5 * 60 * 1000;
 // Timeout por defecto para las solicitudes (8 segundos)
 const DEFAULT_TIMEOUT = 8000;
 
+interface ErrorData {
+  message?: string;
+}
+
 type FetchOptions = RequestInit & {
   timeout?: number;
   useCache?: boolean;
@@ -74,7 +78,7 @@ export async function fetchClient<T = unknown>(url: string, options: FetchOption
     let response;
     try {
       response = await fetch(url, mergedOptions);
-    } catch (networkError) {
+    } catch {
       throw new Error(`Error de conexión: No se pudo conectar al servidor. Verifica tu red.`);
     }
     
@@ -88,7 +92,7 @@ export async function fetchClient<T = unknown>(url: string, options: FetchOption
     if (!response.ok) {
       let errorMessage: string;
       try {
-        const errorData = await response.json();
+        const errorData = await response.json() as ErrorData;
         errorMessage = errorData.message || `Error ${response.status}: ${response.statusText}`;
       } catch {
         errorMessage = `Error ${response.status}: ${response.statusText}`;
@@ -181,7 +185,7 @@ export async function prefetchUrl(url: string, options: FetchOptions = {}): Prom
     // Intentar la precarga
     await fetchClient(url, prefetchOptions);
     console.log(`[fetchClient] URL precargada exitosamente: ${url}`);
-  } catch (error) {
+  } catch {
     // No mostrar errores detallados en prefetch, es solo optimización
     console.log(`[fetchClient] Prefetch para ${url} ignorado: Es solo optimización.`);
   }
