@@ -23,7 +23,7 @@ export default function ProfileLayout({
       
       <main className="flex-1 overflow-y-auto">
         <Navbar 
-          email="Usuario" 
+          username="Usuario" 
           onMenuToggle={() => setMobileOpen(!mobileOpen)}
           showMenuButton={true}
         />
