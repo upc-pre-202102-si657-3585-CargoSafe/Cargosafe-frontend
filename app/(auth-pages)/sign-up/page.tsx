@@ -27,12 +27,6 @@ import {
 import { UserRole } from "@/app/interfaces";
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Define error type to avoid using 'any'
-interface ApiError {
-  digest?: string;
-  message?: string;
-}
-
 export default function SignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,7 +101,7 @@ export default function SignUp() {
             }, 2000);
           }
         }
-      } catch (error: ApiError) {
+      } catch (error: any) {
         if (error.digest?.includes('NEXT_REDIRECT')) {
           console.log("[SignUp] Registro exitoso con redirección");
           setMessage({

@@ -46,6 +46,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { AuthUtils, API_ENDPOINTS } from "@/app/config/api";
 
+interface UserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  street: string;
+  number: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
 // Esquemas de validación para los formularios
 // (profileFormSchema was unused, so removed)
 
@@ -86,7 +98,7 @@ const ProfileTab = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [profile, setProfile] = useState<unknown>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   // Removed setAvatarSrc and avatarSrc since not used
 
   // Formulario react-hook-form
@@ -115,7 +127,7 @@ const ProfileTab = () => {
       setError("");
       setSuccess("");
       try {
-        const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId));
+        const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId as number));
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
@@ -148,12 +160,12 @@ const ProfileTab = () => {
   }, [userId]);
 
   // Crear perfil
-  const handleCreate = async (values: unknown) => {
+  const handleCreate = async (values: Omit<UserProfile, 'id'>) => {
     setError("");
     setSuccess("");
     setLoading(true);
     try {
-      const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId), {
+      const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId as number), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -175,12 +187,12 @@ const ProfileTab = () => {
   };
 
   // Editar perfil
-  const handleEdit = async (values: unknown) => {
+  const handleEdit = async (values: Omit<UserProfile, 'id'>) => {
     setError("");
     setSuccess("");
     setLoading(true);
     try {
-      const res = await fetch(API_ENDPOINTS.PROFILES.BY_ID((profile as any).id), {
+      const res = await fetch(API_ENDPOINTS.PROFILES.BY_ID(profile!.id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -212,21 +224,21 @@ const ProfileTab = () => {
         <div className="flex items-center space-x-4">
           <Avatar className="h-24 w-24 border-2 border-primary/20">
             <AvatarImage src={"/avatars/01.png"} alt="Avatar" />
-            <AvatarFallback>{profile ? `${(profile as any).firstName?.[0] || ""}${(profile as any).lastName?.[0] || ""}` : "U"}</AvatarFallback>
+            <AvatarFallback>{profile ? `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}` : "U"}</AvatarFallback>
           </Avatar>
           <div>
             <h2 className="text-2xl font-bold">
-              {profile ? (profile as any).email : "Sin perfil"}
+              {profile ? profile.email : "Sin perfil"}
             </h2>
             <p className="text-muted-foreground">&nbsp;</p>
           </div>
         </div>
         <div className="flex space-x-2">
-          {profile && !isEditing && (
+          {Boolean(profile) && !isEditing ? (
             <Button size="sm" onClick={() => setIsEditing(true)} aria-label="Editar perfil">
               <Edit className="h-4 w-4 mr-2" />Editar Perfil
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
       <Separator />
@@ -324,14 +336,14 @@ const ProfileTab = () => {
                 setSuccess("");
                 if (profile) {
                   form.reset({
-                    firstName: (profile as any).firstName || "",
-                    lastName: (profile as any).lastName || "",
-                    email: (profile as any).email || "",
-                    street: (profile as any).street || "",
-                    number: (profile as any).number || "",
-                    city: (profile as any).city || "",
-                    postalCode: (profile as any).postalCode || "",
-                    country: (profile as any).country || "",
+                    firstName: profile.firstName || "",
+                    lastName: profile.lastName || "",
+                    email: profile.email || "",
+                    street: profile.street || "",
+                    number: profile.number || "",
+                    city: profile.city || "",
+                    postalCode: profile.postalCode || "",
+                    country: profile.country || "",
                   });
                 } else {
                   form.reset();
