@@ -248,9 +248,9 @@ export default function RequestServicePage() {
         } else if (
           typeof apiError === 'object' && apiError !== null &&
           'response' in apiError &&
-          (apiError as any).response?.data?.message
+          typeof (apiError as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
         ) {
-          setSubmitError(`Error del servidor: ${(apiError as any).response.data.message}`);
+          setSubmitError(`Error del servidor: ${(apiError as { response: { data: { message: string } } }).response.data.message}`);
         } else if (
           typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof (apiError as { message: unknown }).message === 'string'
         ) {

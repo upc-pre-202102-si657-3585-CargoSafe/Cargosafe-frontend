@@ -1,4 +1,4 @@
-import { LatLng, geocodeAddress, loadGoogleMapsScript } from "@/lib/map-service";
+import { LatLng, loadGoogleMapsScript } from "@/lib/map-service";
 
 /**
  * Calcula la distancia aproximada entre dos puntos en línea recta
