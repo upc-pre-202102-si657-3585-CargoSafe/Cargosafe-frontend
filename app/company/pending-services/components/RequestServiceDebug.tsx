@@ -47,7 +47,7 @@ export function RequestServiceDebug({ services }: RequestServiceDebugProps) {
           <li>ACCEPTED: {services.filter(s => s.status?.name === StatusName.ACCEPTED).length}</li>
           <li>IN_PROGRESS: {services.filter(s => s.status?.name === StatusName.IN_PROGRESS).length}</li>
           <li>COMPLETED: {services.filter(s => s.status?.name === StatusName.COMPLETED).length}</li>
-          <li>CANCELLED: {services.filter(s => s.status?.name === StatusName.CANCELLED).length}</li>
+          <li>REJECTED: {services.filter(s => s.status?.name === StatusName.REJECTED).length}</li>
           <li>Sin estado: {services.filter(s => !s.status || !s.status.name).length}</li>
         </ul>
       </div>
