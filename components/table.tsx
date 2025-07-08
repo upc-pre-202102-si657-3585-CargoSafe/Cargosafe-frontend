@@ -12,8 +12,6 @@ import {
   VisibilityState,
   ColumnFiltersState,
   getFilteredRowModel,
-  Row,
-  Column,
 } from "@tanstack/react-table";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -55,6 +53,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import type { Row, Column } from "@tanstack/react-table";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -387,6 +386,14 @@ export function DataTable<TData, TValue>({
   );
 }
 
+// Define el tipo de fila para la tabla de ejemplo
+interface TableExampleRow {
+  id: string;
+  nombre: string;
+  email: string;
+  estado: string;
+}
+
 // Componente de ejemplo de uso
 export function TableExample() {
   // Definición de columnas de ejemplo
@@ -394,13 +401,13 @@ export function TableExample() {
     {
       accessorKey: "id",
       header: "ID",
-      cell: ({ row }: { row: Row<any> }) => (
+      cell: ({ row }: { row: Row<TableExampleRow> }) => (
         <div className="font-medium">{row.getValue("id")}</div>
       ),
     },
     {
       accessorKey: "nombre",
-      header: ({ column }: { column: Column<any, unknown> }) => (
+      header: ({ column }: { column: Column<TableExampleRow, unknown> }) => (
         <Button
           variant="ghost"
           className="-ml-4 group"
@@ -417,7 +424,7 @@ export function TableExample() {
     {
       accessorKey: "estado",
       header: "Estado",
-      cell: ({ row }: { row: Row<any> }) => {
+      cell: ({ row }: { row: Row<TableExampleRow> }) => {
         const estado = row.getValue("estado") as string;
         
         const estadoMap: Record<string, { color: string; label: string }> = {
@@ -441,7 +448,7 @@ export function TableExample() {
     {
       accessorKey: "acciones",
       header: "",
-      cell: ({ row }: { row: Row<any> }) => (
+      cell: ({ row }: { row: Row<TableExampleRow> }) => (
         <div className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
