@@ -199,20 +199,13 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
   }, [mapInstance]);
 
   // Actualizar marcadores de vehículos
-  const updateVehicleMarkers = useCallback(() => {
-    if (!mapInstance) return;
-    
-    // Limpiar marcadores existentes
+  const updateVehicleMarkers = useCallback((map: google.maps.Map) => {
+    if (!map) return;
     clearMarkers();
-    
-    // Crear nuevos marcadores para cada vehículo
     const newMarkers = vehicleLocations.map(vehicle => {
       let marker;
-      
       try {
-        // Intentar usar AdvancedMarkerElement si está disponible
         if (window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
-          // Crear elemento HTML personalizado para el marcador
           const markerElement = document.createElement('div');
           markerElement.className = 'vehicle-marker';
           markerElement.innerHTML = `
@@ -244,19 +237,16 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
               </div>
             </div>
           `;
-          
-          // Crear marcador avanzado
           marker = new window.google.maps.marker.AdvancedMarkerElement({
             position: vehicle,
-            map: mapInstance,
+            map: map,
             title: vehicle.label,
             content: markerElement
           });
         } else {
-          // Fallback a marcador tradicional
           marker = new window.google.maps.Marker({
             position: vehicle,
-            map: mapInstance,
+            map: map,
             title: vehicle.label,
             icon: {
               url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
@@ -269,70 +259,58 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
             }
           });
         }
-        
         return marker;
       } catch (e) {
         console.warn("Error al crear marcador de vehículo:", e);
         return null;
       }
     }).filter(Boolean) as Array<google.maps.Marker | google.maps.marker.AdvancedMarkerElement>;
-    
     markersRef.current = newMarkers;
-    
-    // Ajustar el mapa para mostrar todos los marcadores
     if (newMarkers.length > 0) {
       const bounds = new window.google.maps.LatLngBounds();
-      
-      // Agregar ubicaciones de vehículos
       vehicleLocations.forEach(vehicle => {
         bounds.extend(vehicle);
       });
-      
-      // Agregar ubicación del usuario si está disponible
       if (userLocation && showCurrentLocation) {
         bounds.extend(userLocation);
       }
-      
-      mapInstance.fitBounds(bounds);
-      
-      // Si solo hay un marcador, hacer zoom adecuado
+      map.fitBounds(bounds);
       if (newMarkers.length === 1 && !userLocation && !centerLocation) {
-        mapInstance.setZoom(14);
+        map.setZoom(14);
       }
     } else if (userLocation && showCurrentLocation) {
-      // Si no hay vehículos pero sí ubicación de usuario, centrar en ella
-      mapInstance.setCenter(userLocation);
-      mapInstance.setZoom(14);
+      map.setCenter(userLocation);
+      map.setZoom(14);
     } else if (centerLocation) {
-      // Si hay una ubicación central definida, usarla
-      mapInstance.setCenter(centerLocation);
-      mapInstance.setZoom(12);
+      map.setCenter(centerLocation);
+      map.setZoom(12);
     }
-  }, [mapInstance, vehicleLocations, userLocation, showCurrentLocation, centerLocation, clearMarkers]);
+  }, [vehicleLocations, userLocation, showCurrentLocation, centerLocation, clearMarkers]);
 
-  // Cargar el script de Google Maps y inicializar el mapa
   useEffect(() => {
     let isMounted = true;
     let mapObjectInstance: google.maps.Map | null = null;
-    
+
+    const waitForMapTypeId = async () => {
+      for (let i = 0; i < 20; i++) {
+        if (window.google && window.google.maps && window.google.maps.MapTypeId) return;
+        await new Promise(res => setTimeout(res, 100));
+      }
+      throw new Error("Google Maps no está completamente cargado.");
+    };
+
     const initMap = async () => {
       try {
-        if (isMounted) setLoading(true);
-        
-        // Cargar el script de Google Maps
+        setLoading(true);
         await loadGoogleMapsScript();
-        
-        if (!mapRef.current || !isMounted) return;
-        
-        // Determinar el centro inicial del mapa
-        let initialCenter = { lat: -12.0464, lng: -77.0428 }; // Lima por defecto
-        if (centerLocation) {
-          initialCenter = centerLocation;
-        } else if (vehicleLocations.length > 0) {
-          initialCenter = vehicleLocations[0];
-        }
-        
-        // Crear el mapa
+        await waitForMapTypeId();
+
+        if (!mapRef.current) return;
+
+        let initialCenter = { lat: -12.0464, lng: -77.0428 };
+        if (centerLocation) initialCenter = centerLocation;
+        else if (vehicleLocations.length > 0) initialCenter = vehicleLocations[0];
+
         const mapOptions = {
           center: initialCenter,
           zoom: 12,
@@ -342,86 +320,35 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
           fullscreenControl: true,
           zoomControl: true,
         };
-        
-        try {
-          mapObjectInstance = new window.google.maps.Map(mapRef.current, mapOptions);
-          
-          if (isMounted) {
-            setMapInstance(mapObjectInstance);
-            setLoading(false);
-            
-            // Obtener ubicación del usuario si es necesario
-            if (showCurrentLocation) {
-              getCurrentLocation();
-            }
-            
-            // Actualizar los marcadores de vehículos
-            setTimeout(() => {
-              if (isMounted) {
-                updateVehicleMarkers();
-              }
-            }, 100);
-          }
-        } catch (err) {
-          console.error("Error al crear instancia del mapa:", err);
-          if (isMounted) {
-            setError("No se pudo inicializar el mapa. Por favor, intenta de nuevo más tarde.");
-            setLoading(false);
-          }
-        }
+
+        mapObjectInstance = new window.google.maps.Map(mapRef.current, mapOptions);
+        setMapInstance(mapObjectInstance);
+        setLoading(false);
+
+        if (showCurrentLocation) getCurrentLocation();
+        setTimeout(() => {
+          if (isMounted && mapObjectInstance) updateVehicleMarkers(mapObjectInstance);
+        }, 100);
       } catch (err) {
-        console.error("Error al inicializar el mapa:", err);
-        if (isMounted) {
-          setError("No se pudo cargar el mapa. Por favor, intenta de nuevo más tarde.");
-          setLoading(false);
-        }
+        setError("No se pudo cargar el mapa. Por favor, intenta de nuevo más tarde.");
+        setLoading(false);
       }
     };
 
     initMap();
-    
-    // Configurar intervalo de actualización si se proporciona
-    let refreshTimer: NodeJS.Timeout | null = null;
-    if (refreshInterval && onRefresh) {
-      refreshTimer = setInterval(() => {
-        if (isMounted && onRefresh) {
-          onRefresh();
-        }
-      }, refreshInterval);
-    }
-    
-    // Limpieza al desmontar
+
     return () => {
       isMounted = false;
-      
-      if (refreshTimer) {
-        clearInterval(refreshTimer);
-      }
-      
       clearMarkers();
-      
-      // Asegurarnos de que el mapa se desconecte completamente
-      if (mapObjectInstance) {
-        try {
-          // Eliminar explícitamente listeners que podrían estar asociados al mapa
-          if (window.google && window.google.maps && window.google.maps.event) {
-            window.google.maps.event.clearInstanceListeners(mapObjectInstance);
-          }
-        } catch (e) {
-          console.warn("Error al limpiar listeners del mapa:", e);
-        }
-      }
-      
       setMapInstance(null);
     };
-  }, [centerLocation, getCurrentLocation, onRefresh, refreshInterval, showCurrentLocation, updateVehicleMarkers, vehicleLocations, clearMarkers]);
+  }, []);
 
-  // Actualizar marcadores cuando cambian las ubicaciones de los vehículos
   useEffect(() => {
     if (mapInstance) {
-      updateVehicleMarkers();
+      updateVehicleMarkers(mapInstance);
     }
-  }, [updateVehicleMarkers]);
+  }, [mapInstance, vehicleLocations, userLocation, showCurrentLocation, centerLocation]);
 
   return (
     <Card className={className}>
