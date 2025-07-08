@@ -29,8 +29,8 @@ export function MapContainer({
   const mapContainerId = useRef<string>(`map-container-${Math.random().toString(36).substring(2, 9)}`);
   const infoContainerId = useRef<string>(`map-info-${Math.random().toString(36).substring(2, 9)}`);
   const [loading, setLoading] = useState(true);
-  const [ setDistance] = useState<number | null>(null);
-  const [ setDuration] = useState<number | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
