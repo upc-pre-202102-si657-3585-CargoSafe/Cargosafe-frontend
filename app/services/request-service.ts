@@ -362,7 +362,7 @@ export const RequestServiceManager = {
             }
             
             // Convertir valores numéricos apropiadamente
-            const dataToSend: unknown = { ...requestData };
+            const dataToSend: Partial<CreateRequestServiceRequest> = { ...requestData };
 
             if (dataToSend.numberPackages !== undefined) dataToSend.numberPackages = Number(dataToSend.numberPackages);
             if (dataToSend.distance !== undefined) dataToSend.distance = Number(dataToSend.distance);
