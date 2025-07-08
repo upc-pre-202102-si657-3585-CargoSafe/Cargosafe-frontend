@@ -6,7 +6,7 @@ import {
   LucideIcon
 } from "lucide-react";
 
-import { StatusName } from "@/app/interfaces";
+
 
 export const containerVariants = {
   hidden: { opacity: 0 },

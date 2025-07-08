@@ -11,8 +11,8 @@ import { AlertCircle, Loader2, Map as MapIcon, Package2, MapPin, Navigation, Pin
 import { MapContainer } from "@/components/map-container";
 import { Maps } from "@/components/maps";
 import { FormValues } from "../constants";
-import { LatLng } from "@/lib/map-service";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LocationDetails } from "../utils/geo-utils";
 import { AuthUtils } from "@/app/config/api";
 import Link from "next/link";

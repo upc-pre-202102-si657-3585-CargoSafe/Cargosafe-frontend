@@ -38,14 +38,11 @@ export function ServiceCard({
   expandedServiceId, 
   toggleServiceDetails 
 }: ServiceCardProps) {
-  if (!service || !service.id) {
-    return null;
-  }
-  
-  const isExpanded = expandedServiceId === service.id;
+  // Hooks deben ir siempre al inicio
+  const isExpanded = expandedServiceId === service?.id;
   const prevExpandedRef = useRef(isExpanded);
   const [showMap, setShowMap] = useState(false);
-  
+
   useEffect(() => {
     if (isExpanded && !showMap) {
       const timer = setTimeout(() => {
@@ -55,9 +52,13 @@ export function ServiceCard({
     } else if (!isExpanded && showMap) {
       setShowMap(false);
     }
-    
     prevExpandedRef.current = isExpanded;
   }, [isExpanded, showMap]);
+
+  // Ahora el return condicional
+  if (!service || !service.id) {
+    return null;
+  }
   
   const hasValidCoordinates = !!(
     service.pickupLat && service.pickupLng && 
