@@ -95,20 +95,37 @@ export const extractLocationDetails = (geocoderResults: unknown): LocationDetail
     let district = ""; // Valor por defecto
     
     // Extraer componentes de la dirección
-    if (result && result.address_components) {
-      for (const component of result.address_components) {
-        if (component.types.includes("country")) {
-          country = component.long_name;
-        }
-        
-        if (component.types.includes("administrative_area_level_1")) {
-          department = component.long_name;
-        }
-        
-        if (component.types.includes("administrative_area_level_2") || 
-            component.types.includes("locality") ||
-            component.types.includes("sublocality_level_1")) {
-          district = component.long_name;
+    if (
+      result &&
+      typeof result === 'object' &&
+      'address_components' in result &&
+      Array.isArray((result as { address_components?: unknown }).address_components)
+    ) {
+      const addressComponents = (result as { address_components: unknown[] }).address_components;
+      for (const component of addressComponents) {
+        if (
+          component &&
+          typeof component === 'object' &&
+          'types' in component &&
+          Array.isArray((component as { types?: unknown }).types) &&
+          'long_name' in component &&
+          typeof (component as { long_name?: unknown }).long_name === 'string'
+        ) {
+          const types = (component as { types: string[] }).types;
+          const longName = (component as { long_name: string }).long_name;
+          if (types.includes("country")) {
+            country = longName;
+          }
+          if (types.includes("administrative_area_level_1")) {
+            department = longName;
+          }
+          if (
+            types.includes("administrative_area_level_2") ||
+            types.includes("locality") ||
+            types.includes("sublocality_level_1")
+          ) {
+            district = longName;
+          }
         }
       }
     }

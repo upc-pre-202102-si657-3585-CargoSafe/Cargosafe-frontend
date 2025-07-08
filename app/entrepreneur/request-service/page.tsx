@@ -289,7 +289,7 @@ export default function RequestServicePage() {
             <SuccessMessage />
         ) : (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit as any)}>
+              <form onSubmit={form.handleSubmit((data) => onSubmit(data))}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <motion.div variants={itemVariants}>
                     <TabsList className="grid grid-cols-3 mb-8">
