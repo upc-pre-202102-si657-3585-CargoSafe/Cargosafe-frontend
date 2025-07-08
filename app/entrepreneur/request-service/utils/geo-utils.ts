@@ -52,11 +52,11 @@ export const DEFAULT_DESTINATION_LOCATION: LocationDetails = {
 /**
  * Extrae información de ubicación a partir de resultados de geocodificación
  */
-export const extractLocationDetails = (geocoderResults: any): LocationDetails | null => {
-  if (!geocoderResults || !geocoderResults.length) return null;
+export const extractLocationDetails = (geocoderResults: unknown): LocationDetails | null => {
+  if (!geocoderResults || !Array.isArray(geocoderResults) || (geocoderResults as any[]).length === 0) return null;
   
   try {
-    const result = geocoderResults[0];
+    const result = (geocoderResults as any[])[0];
     const coords = {
       lat: result.geometry.location.lat(),
       lng: result.geometry.location.lng()

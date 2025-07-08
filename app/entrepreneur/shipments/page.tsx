@@ -252,8 +252,8 @@ export default function ShipmentsPage() {
       try {
         const allServices = await RequestServiceManager.getRequestServices();
         setShipments(allServices);
-      } catch (err) {
-        // setError("Error al cargar los envíos. Intenta nuevamente."); // Original code had this line commented out
+      } catch {
+        // setError("Error al cargar los envíos. Intenta nuevamente."); // Original code had this line comentado
       } finally {
         setLoading(false);
       }

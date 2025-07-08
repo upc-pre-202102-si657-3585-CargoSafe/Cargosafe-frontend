@@ -168,13 +168,6 @@ export function Sidebar({
     ...(userRole === UserRole.COMPANY ? companyNavItems : [])
   ].filter(item => item.roles.includes(userRole));
 
-  // Determinar la URL base según el rol
-  const getBaseUrl = () => {
-    if (userRole === UserRole.ENTREPRENEUR) return '/entrepreneur';
-    if (userRole === UserRole.COMPANY) return '/company';
-    return '';
-  };
-
   // Verificar si una ruta está activa
   const isActive = (href: string) => {
     return pathname === href || pathname?.startsWith(href + '/');
