@@ -28,11 +28,6 @@ import { UserRole } from "@/app/interfaces";
 import { useRouter, useSearchParams } from 'next/navigation';
 
 // Define error type to avoid using 'any'
-interface ActionError {
-  digest?: string;
-  message?: string;
-}
-
 interface ApiError {
   digest?: string;
   message?: string;

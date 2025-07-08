@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { TruckIcon, UsersIcon, MapPinIcon, BarChart3Icon } from "lucide-react";
 import { VehicleService } from '@/app/services/vehicle-service';
 import { RequestServiceManager } from '@/app/services/request-service';
-import { AuthUtils } from '@/app/config/api';
 import { DriverService } from '@/app/services/driver-service';
 import type { Vehicle, Driver, RequestService } from '@/app/interfaces';
 
@@ -31,7 +30,8 @@ export default function CompanyDashboardPage() {
         setVehicles(veh);
         setDrivers(drv);
         setServices(req);
-      } catch (e) {
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
         setError("Error al cargar los datos del dashboard.");
       } finally {
         setLoading(false);
@@ -40,8 +40,8 @@ export default function CompanyDashboardPage() {
     fetchData();
   }, []);
 
-  const pendingServices = services.filter((s: any) => s.status?.name === 'PENDING');
-  const completedTrips = services.filter((s: any) => s.status?.name === 'COMPLETED');
+  const pendingServices = services.filter((service: RequestService) => service.status?.name === 'PENDING');
+  const completedTrips = services.filter((service: RequestService) => service.status?.name === 'COMPLETED');
 
   if (loading) {
     return <div className="text-center py-8">Cargando datos...</div>;
