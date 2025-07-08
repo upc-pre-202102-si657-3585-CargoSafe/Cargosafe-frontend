@@ -16,14 +16,14 @@ export default function CompanyLayout({
     <div className="flex min-h-screen">
       <Sidebar 
         userRole={UserRole.COMPANY} 
-        username="Empresa Demo"
+        email="CargoSafe"
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
       
       <div className="flex flex-col flex-1">
         <Navbar 
-          username="Empresa Demo" 
+          username="CargoSafe" 
           onMenuToggle={() => setMobileOpen(!mobileOpen)}
           showMenuButton={true}
         />
