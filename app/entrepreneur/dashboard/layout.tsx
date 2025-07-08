@@ -25,7 +25,7 @@ export default function EntrepreneurDashboardLayout({
 		<div className="flex min-h-screen bg-background">
 			<Sidebar 
 				userRole={UserRole.ENTREPRENEUR}
-				username="Emprendedor Demo"
+				email="Emprendedor Demo"
 				onLogout={handleLogout}
 				mobileOpen={mobileMenuOpen}
 				setMobileOpen={setMobileMenuOpen}
