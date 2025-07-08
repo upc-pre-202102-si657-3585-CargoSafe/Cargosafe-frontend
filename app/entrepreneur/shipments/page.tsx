@@ -91,7 +91,7 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
     try {
       const date = new Date(dateString);
       return format(date, "dd 'de' MMMM, yyyy", { locale: es });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
