@@ -28,7 +28,7 @@ export const VehicleService = {
           timeout: APP_CONFIG.API_TIMEOUTS,
           headers
         });
-      } catch (error) {
+      } catch {
         console.warn('Primer intento fallido, reintentando con timeout más largo...');
         response = await axios.get(API_ENDPOINTS.VEHICLES.BASE, { 
           timeout: APP_CONFIG.API_TIMEOUTS * 2,

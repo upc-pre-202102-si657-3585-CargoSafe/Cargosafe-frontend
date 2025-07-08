@@ -53,7 +53,7 @@ export const DEFAULT_DESTINATION_LOCATION: LocationDetails = {
  * Extrae información de ubicación a partir de resultados de geocodificación
  */
 export const extractLocationDetails = (geocoderResults: unknown): LocationDetails | null => {
-  if (!geocoderResults || !Array.isArray(geocoderResults) || (geocoderResults as any[]).length === 0) return null;
+  if (!geocoderResults || !Array.isArray(geocoderResults) || geocoderResults.length === 0) return null;
   
   try {
     const result = Array.isArray(geocoderResults) ? geocoderResults[0] : undefined;
