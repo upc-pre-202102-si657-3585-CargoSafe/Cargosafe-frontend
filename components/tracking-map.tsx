@@ -53,8 +53,11 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
   const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<any>(null);
   
-  // ID único para este componente de mapa
-  const mapId = useMemo(() => `tracking-map-${Math.random().toString(36).substr(2, 9)}`, []);
+  // ID único para este componente de mapa, generado solo en el cliente
+  const [mapId, setMapId] = useState<string | null>(null);
+  useEffect(() => {
+    setMapId(`tracking-map-${Math.random().toString(36).substr(2, 9)}`);
+  }, []);
   
   // Limpiar marcadores
   const clearMarkers = () => {

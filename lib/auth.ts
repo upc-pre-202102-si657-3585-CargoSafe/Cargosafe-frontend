@@ -49,14 +49,14 @@ export const AuthService = {
   async verifyToken(): Promise<boolean> {
     try {
       // Esta sería una URL para verificar la validez del token
-      // Normalmente sería un endpoint como /api/v1/verify-token
+      // Normalmente sería un endpoint como API_ENDPOINTS.AUTH.VERIFY_TOKEN (no hardcodear la URL)
       // Aquí usamos users como aproximación
       await fetchClient(API_ENDPOINTS.USERS.BASE, {
         timeout: 3000,
-        useCache: true, // Usar caché para reducir llamadas
+        useCache: true, 
       });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   },

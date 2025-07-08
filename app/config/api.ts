@@ -4,7 +4,8 @@
  * It is used throughout the application to standardize API calls and ensure consistency.
  */
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+// Obtener la URL base de la API desde variable de entorno
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 export const APP_CONFIG = {
@@ -57,7 +58,7 @@ export const AuthUtils = {
     const cookies = decodedCookie.split(';');
     
     for (let i = 0; i < cookies.length; i++) {
-      let cookie = cookies[i].trim();
+      const cookie = cookies[i].trim();
       if (cookie.indexOf(name + "=") === 0) {
         return cookie.substring(name.length + 1);
       }
@@ -102,7 +103,7 @@ export const AuthUtils = {
           }
           
           return value;
-        } catch (parseError) {
+        } catch {
           // Si no se puede parsear, podría ser un token legacy (solo string)
           return tokenData;
         }
@@ -259,10 +260,7 @@ export const API_ENDPOINTS = {
    * Endpoints for request service operations
    */
   REQUEST_SERVICES: {
-   //con el base hace el post y get all 
-    //con el by_id hace el get por id
-    //con el status hace el get por estado
-    //con el update_status hace el put por id y esta
+ 
     BASE: `${API_BASE_URL}/requestServices`,
     BY_ID: (id: string | number) => `${API_BASE_URL}/requestServices/${id}`,
     STATUS: (id: string | number) => `${API_BASE_URL}/requestServices/${id}/status`,

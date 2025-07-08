@@ -1,12 +1,11 @@
 import React from "react";
 
 interface VehicleHeaderProps {
-  totalVehicles: number;
   children?: React.ReactNode;
 }
 
 
-const VehicleHeader: React.FC<VehicleHeaderProps> = ({ totalVehicles, children }) => {
+const VehicleHeader: React.FC<VehicleHeaderProps> = ({ children }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
       <div>

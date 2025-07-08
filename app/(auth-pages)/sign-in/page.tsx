@@ -7,16 +7,14 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { GoogleSignInButton } from "@/app/auth/components/google-sign-in-button";
 import { FormMessage, Message } from "@/app/components/form-message";
-import { SubmitButton } from "@/app/components/submit-button";
 import NavbarAuth from "@/app/auth/components/navbar-auth";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { LoadingOverlay } from "@/app/components/loading-overlay";
 import { useFormStatus } from 'react-dom';
-import { useOptimizedForm } from "@/hooks/useOptimizedForm"; 
+import { useOptimizedForm } from "@/hooks/useOptimizedForm";
 import { API_ENDPOINTS } from "@/app/config/api";
 
 function setCookie(name: string, value: string, days?: number) {
@@ -31,11 +29,11 @@ function setCookie(name: string, value: string, days?: number) {
 
 function FormStatusIndicator() {
   const { pending } = useFormStatus();
-  
+
   return (
-    <LoadingOverlay 
-      isLoading={pending} 
-      message="Iniciando sesión, por favor espera..." 
+    <LoadingOverlay
+      isLoading={pending}
+      message="Iniciando sesión, por favor espera..."
     />
   );
 }
@@ -45,7 +43,7 @@ export default function SignIn() {
   const [message, setMessage] = useState<Message>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  
+
   const { formRef, handleSubmit } = useOptimizedForm({
     endpointUrl: API_ENDPOINTS.AUTHENTICATION.SIGN_IN,
     onSubmitStart: () => {
@@ -56,13 +54,13 @@ export default function SignIn() {
       setIsSubmitting(false);
       router.refresh();
     },
-    skipPrefetch: true 
+    skipPrefetch: true
   });
-  
+
   useEffect(() => {
     const messageText = searchParams?.get('message');
     const messageType = searchParams?.get('type') as 'error' | 'success';
-    
+
     if (messageText) {
       setMessage({
         text: messageText,
@@ -74,7 +72,7 @@ export default function SignIn() {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 dark:from-neutral-950 dark:to-neutral-900 dark:text-gray-100">
       <NavbarAuth />
-      
+
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 items-center justify-center p-12">
         <div className="max-w-md space-y-6">
           <div className="flex justify-center">
@@ -98,7 +96,7 @@ export default function SignIn() {
               </div>
             </div>
           </div>
-          
+
           <div className="text-center space-y-3">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
               Acceso Seguro
@@ -107,7 +105,7 @@ export default function SignIn() {
               Administra tus proyectos y colabora con tu equipo en un entorno protegido y confiable.
             </p>
           </div>
-          
+
           <div className="mt-8 space-y-4 bg-white/80 dark:bg-neutral-800/50 p-6 rounded-xl backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
@@ -140,7 +138,7 @@ export default function SignIn() {
       <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
         <Card className="w-full max-w-md bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm shadow-md border-0 relative">
           <FormStatusIndicator />
-          
+
           <CardHeader className="space-y-1">
             <div className="flex justify-center lg:justify-start mb-4">
               <div className="h-12 w-12 rounded-full bg-primary/90 shadow-lg flex items-center justify-center">
@@ -149,7 +147,7 @@ export default function SignIn() {
                 </svg>
               </div>
             </div>
-            
+
             <CardTitle className="text-2xl font-bold tracking-tight text-center lg:text-left">
               Bienvenido de nuevo
             </CardTitle>
@@ -163,7 +161,7 @@ export default function SignIn() {
               </Link>
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6 pt-4">
             <div className="grid grid-cols-1 gap-3">
               <GoogleSignInButton />
@@ -180,33 +178,34 @@ export default function SignIn() {
               </div>
             </div>
 
-            <form 
-              className="space-y-5" 
+            <form
+              className="space-y-5"
               action={async (formData) => {
                 try {
                   const result = await signInAction(formData);
-                  
-                  if ('type' in result && result.type === 'error') {
+                  console.log("Resultado login:", result);
+
+                  if (!('success' in result) ) {
                     setMessage(result);
-                  } 
+                  }
                   else if ('success' in result && result.success === true) {
                     const { token, id, username, role, rememberMe } = result.userData;
-                    
+
                     const expiryDays = rememberMe ? 30 : undefined;
-                    
+
                     setCookie('authToken', token, expiryDays);
-                    
+
                     const userInfo = { id, username, role };
                     setCookie('userInfo', JSON.stringify(userInfo), expiryDays);
-                    
+
                     try {
                       localStorage.setItem('userInfo', JSON.stringify(userInfo));
                     } catch (e) {
                       console.error('Error al guardar información del usuario:', e);
                     }
-                    
+
                     router.push(result.redirectTo);
-                    
+
                     setTimeout(() => {
                       window.location.href = result.redirectTo;
                     }, 300);
@@ -219,7 +218,7 @@ export default function SignIn() {
                   });
                 }
               }}
-              ref={formRef} 
+              ref={formRef}
               onSubmit={handleSubmit}
             >
               <div className="space-y-2">
@@ -287,20 +286,20 @@ export default function SignIn() {
                 </label>
               </div>
 
-              <SubmitButton
-                pendingText="Iniciando sesión..."
-                className="h-11 w-full rounded-lg bg-primary font-medium text-black transition-colors hover:bg-primary/90 focus:outline-none focus:ring focus:ring-primary/20"
-                disabled={isSubmitting}
+              <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-11 w-full rounded-lg bg-primary font-medium text-black transition-colors hover:bg-primary/90 focus:outline-none focus:ring focus:ring-primary/20"
               >
-                Iniciar sesión
-              </SubmitButton>
+                {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
+              </button>
 
               <div className="text-center">
                 <FormMessage message={message} />
               </div>
             </form>
           </CardContent>
-          
+
           <CardFooter className="flex flex-col text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Al iniciar sesión, aceptas nuestros{" "}

@@ -41,7 +41,7 @@ interface NavItem {
 // Props para el componente Sidebar
 interface SidebarProps {
   userRole?: UserRole;
-  username?: string;
+  email?: string;
   avatarUrl?: string;
   onLogout?: () => void;
   mobileOpen?: boolean;
@@ -51,7 +51,7 @@ interface SidebarProps {
 
 export function Sidebar({ 
   userRole = UserRole.ENTREPRENEUR, 
-  username = "Usuario", 
+  email = "usuario@correo.com",
   avatarUrl = "",
   onLogout,
   mobileOpen,
@@ -102,18 +102,6 @@ export function Sidebar({
       title: 'Mi Perfil',
       href: '/profile',
       icon: <UserIcon size={20} />,
-      roles: [UserRole.ENTREPRENEUR, UserRole.COMPANY, UserRole.ADMIN]
-    },
-    {
-      title: 'Notificaciones',
-      href: '/notifications',
-      icon: <BellIcon size={20} />,
-      roles: [UserRole.ENTREPRENEUR, UserRole.COMPANY, UserRole.ADMIN]
-    },
-    {
-      title: 'Configuración',
-      href: '/settings',
-      icon: <CogIcon size={20} />,
       roles: [UserRole.ENTREPRENEUR, UserRole.COMPANY, UserRole.ADMIN]
     }
   ];
@@ -326,7 +314,7 @@ export function Sidebar({
           )}>
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={username} className="w-full h-full rounded-full object-cover" />
+                <img src={avatarUrl} alt={email} className="w-full h-full rounded-full object-cover" />
               ) : (
                 <UserIcon size={15} />
               )}
@@ -338,7 +326,7 @@ export function Sidebar({
                 animate="visible"
                 variants={textVariants}
               >
-                <span className="text-sm font-medium text-foreground">{username}</span>
+                <span className="text-sm font-medium text-foreground">{email}</span>
                 <span className="text-xs text-muted-foreground">
                   {userRole === UserRole.ENTREPRENEUR ? 'Emprendedor' : 'Empresa'}
                 </span>

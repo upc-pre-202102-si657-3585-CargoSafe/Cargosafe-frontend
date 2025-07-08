@@ -57,7 +57,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
                 alt={`Vehículo ${vehicle.model}`} 
                 className="h-full w-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = "https://via.placeholder.com/300x200?text=Sin+imagen";
+                  e.currentTarget.src = "/images/placeholder-vehicle.png";
                 }}
               />
             </div>

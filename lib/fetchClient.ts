@@ -3,7 +3,7 @@
  */
 
 // Caché global para almacenar respuestas (mejora el rendimiento)
-const apiCache = new Map<string, { data: any; timestamp: number }>();
+const apiCache = new Map<string, { data: unknown; timestamp: number }>();
 // Tiempo de expiración de la caché en milisegundos (5 minutos)
 const CACHE_EXPIRY = 5 * 60 * 1000;
 // Timeout por defecto para las solicitudes (8 segundos)
@@ -20,7 +20,7 @@ type FetchOptions = RequestInit & {
 /**
  * Cliente fetch optimizado que incluye timeout, caché y manejo de errores mejorado
  */
-export async function fetchClient<T = any>(url: string, options: FetchOptions = {}): Promise<T> {
+export async function fetchClient<T = unknown>(url: string, options: FetchOptions = {}): Promise<T> {
   const {
     timeout = DEFAULT_TIMEOUT,
     useCache = false,

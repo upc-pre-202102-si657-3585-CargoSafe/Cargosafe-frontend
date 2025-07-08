@@ -3,11 +3,10 @@ import { PlusCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DriversHeaderProps {
-  totalDrivers: number;
   children?: React.ReactNode;
 }
 
-export function DriversHeader({ totalDrivers, children }: DriversHeaderProps) {
+export function DriversHeader({ children }: DriversHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <div>

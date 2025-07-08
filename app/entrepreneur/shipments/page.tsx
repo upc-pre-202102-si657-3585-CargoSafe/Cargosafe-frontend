@@ -49,85 +49,12 @@ import {
   BookOpen
 } from "lucide-react";
 import { RequestService, StatusName } from "@/app/interfaces";
+import { RequestServiceManager } from "@/app/services/request-service";
 import { MapContainer } from "@/components/map-container";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-// Datos de ejemplo
-const mockShipments: RequestService[] = [
-  {
-    id: 1,
-    unloadDirection: "Av. Principal 123",
-    type: "Carga General",
-    numberPackages: 3,
-    country: "Perú",
-    department: "Lima",
-    district: "Miraflores",
-    destination: "Miraflores",
-    unloadLocation: "Lima",
-    unloadDate: "2023-07-20",
-    distance: 15.4,
-    holderName: "Juan Pérez",
-    pickupAddress: "Av. Arequipa 1520",
-    pickupLat: -12.0464,
-    pickupLng: -77.0428,
-    destinationAddress: "Av. Benavides 1944",
-    destinationLat: -12.1219,
-    destinationLng: -77.0302,
-    loadDetail: "Muebles pequeños para oficina",
-    weight: "50kg",
-    status: { id: 2, name: StatusName.ACCEPTED },
-    statuses: []
-  },
-  {
-    id: 2,
-    unloadDirection: "Jr. Los Pinos 456",
-    type: "Carga Frágil",
-    numberPackages: 1,
-    country: "Perú",
-    department: "Lima",
-    district: "San Isidro",
-    destination: "San Isidro",
-    unloadLocation: "Lima",
-    unloadDate: "2023-07-22",
-    distance: 8.7,
-    holderName: "María González",
-    pickupAddress: "Av. Javier Prado 2400",
-    pickupLat: -12.0901,
-    pickupLng: -76.9756,
-    destinationAddress: "Calle Las Begonias 450",
-    destinationLat: -12.0977,
-    destinationLng: -77.0282,
-    loadDetail: "Equipos electrónicos delicados",
-    weight: "15kg",
-    status: { id: 3, name: StatusName.IN_PROGRESS },
-    statuses: []
-  },
-  {
-    id: 3,
-    unloadDirection: "Av. La Marina 890",
-    type: "Documentos",
-    numberPackages: 2,
-    country: "Perú",
-    department: "Lima",
-    district: "San Miguel",
-    destination: "San Miguel",
-    unloadLocation: "Lima",
-    unloadDate: "2023-07-18",
-    distance: 12.3,
-    holderName: "Carlos Rodríguez",
-    pickupAddress: "Av. Brasil 3500",
-    pickupLat: -12.0778,
-    pickupLng: -77.0824,
-    destinationAddress: "Av. La Marina 2000",
-    destinationLat: -12.0776,
-    destinationLng: -77.0908,
-    loadDetail: "Documentos legales importantes",
-    weight: "2kg",
-    status: { id: 4, name: StatusName.COMPLETED },
-    statuses: []
-  }
-];
+
 
 // Componente de tarjeta de envío
 const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
@@ -143,7 +70,7 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
         return "bg-purple-500/20 text-purple-700 dark:bg-purple-500/30 dark:text-purple-300";
       case StatusName.COMPLETED:
         return "bg-green-500/20 text-green-700 dark:bg-green-500/30 dark:text-green-300";
-      case StatusName.CANCELLED:
+      case StatusName.REJECTED:
         return "bg-red-500/20 text-red-700 dark:bg-red-500/30 dark:text-red-300";
       default:
         return "bg-gray-500/20 text-gray-700 dark:bg-gray-500/30 dark:text-gray-300";
@@ -156,7 +83,7 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
       case StatusName.ACCEPTED: return "Aceptado";
       case StatusName.IN_PROGRESS: return "En Progreso";
       case StatusName.COMPLETED: return "Completado";
-      case StatusName.CANCELLED: return "Cancelado";
+      case StatusName.REJECTED: return "Rechazado";
       default: return "Desconocido";
     }
   };
@@ -313,11 +240,29 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
 
 // Componente principal de la página
 export default function ShipmentsPage() {
-  const [shipments, setShipments] = useState<RequestService[]>(mockShipments);
+  const [shipments, setShipments] = useState<RequestService[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date");
   const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    const fetchShipments = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const allServices = await RequestServiceManager.getRequestServices();
+        setShipments(allServices);
+      } catch (err) {
+        setError("Error al cargar los envíos. Intenta nuevamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShipments();
+  }, []);
 
   // Filtrar envíos por estado y búsqueda
   const filteredShipments = shipments
@@ -326,10 +271,8 @@ export default function ShipmentsPage() {
       if (activeTab === "active" && shipment.status.name !== StatusName.IN_PROGRESS) return false;
       if (activeTab === "pending" && shipment.status.name !== StatusName.ACCEPTED) return false;
       if (activeTab === "completed" && shipment.status.name !== StatusName.COMPLETED) return false;
-      
       // Filtrar por estado si no es "all"
       if (statusFilter !== "all" && shipment.status.name !== statusFilter) return false;
-      
       // Filtrar por texto de búsqueda
       const searchText = searchQuery.toLowerCase();
       return (
@@ -357,6 +300,23 @@ export default function ShipmentsPage() {
     completed: shipments.filter(s => s.status.name === StatusName.COMPLETED).length,
     all: shipments.length
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <span className="text-muted-foreground mb-2">Cargando envíos...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <span className="text-destructive mb-2">{error}</span>
+        <Button onClick={() => window.location.reload()}>Reintentar</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -423,7 +383,7 @@ export default function ShipmentsPage() {
                   <SelectItem value={StatusName.ACCEPTED}>Aceptado</SelectItem>
                   <SelectItem value={StatusName.IN_PROGRESS}>En Progreso</SelectItem>
                   <SelectItem value={StatusName.COMPLETED}>Completado</SelectItem>
-                  <SelectItem value={StatusName.CANCELLED}>Cancelado</SelectItem>
+                  <SelectItem value={StatusName.REJECTED}>Rechazado</SelectItem>
                 </SelectContent>
               </Select>
 

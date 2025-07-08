@@ -41,7 +41,7 @@ export interface SignInResponse {
   id: number;
   username: string;
   token: string;
-  roles: string[];
+  role: string;
 }
 
 /**
@@ -327,7 +327,7 @@ export enum StatusName {
   ACCEPTED = 'ACCEPTED',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  REJECTED = 'REJECTED'
 }
 
 /**

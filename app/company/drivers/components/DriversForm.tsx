@@ -2,7 +2,6 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Driver } from '@/app/interfaces';
 import {
   Form,
   FormControl,
@@ -143,7 +142,7 @@ export function DriversForm({ defaultValues, onSubmit, isSubmitting = false }: D
               <FormItem>
                 <FormLabel>URL de foto (opcional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://ejemplo.com/foto.jpg" {...field} />
+                  <Input placeholder="URL de la foto del conductor" {...field} />
                 </FormControl>
                 <FormDescription>
                   URL de la foto del conductor
