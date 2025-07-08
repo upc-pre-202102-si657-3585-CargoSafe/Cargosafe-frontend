@@ -56,11 +56,13 @@ export const extractLocationDetails = (geocoderResults: unknown): LocationDetail
   if (!geocoderResults || !Array.isArray(geocoderResults) || (geocoderResults as any[]).length === 0) return null;
   
   try {
-    const result = (geocoderResults as any[])[0];
-    const coords = {
-      lat: result.geometry.location.lat(),
-      lng: result.geometry.location.lng()
-    };
+    const result = Array.isArray(geocoderResults) ? geocoderResults[0] : undefined;
+    const coords = result && result.geometry && result.geometry.location && typeof result.geometry.location.lat === 'function' && typeof result.geometry.location.lng === 'function'
+      ? {
+          lat: result.geometry.location.lat(),
+          lng: result.geometry.location.lng(),
+        }
+      : { lat: 0, lng: 0 };
     
     // Extraer detalles de dirección
     let country = "Perú"; // Valor por defecto
@@ -68,7 +70,7 @@ export const extractLocationDetails = (geocoderResults: unknown): LocationDetail
     let district = ""; // Valor por defecto
     
     // Extraer componentes de la dirección
-    if (result.address_components) {
+    if (result && result.address_components) {
       for (const component of result.address_components) {
         if (component.types.includes("country")) {
           country = component.long_name;
