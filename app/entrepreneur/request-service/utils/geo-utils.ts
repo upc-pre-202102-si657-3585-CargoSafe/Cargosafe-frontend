@@ -57,7 +57,7 @@ export const extractLocationDetails = (geocoderResults: unknown): LocationDetail
   
   try {
     const result = Array.isArray(geocoderResults) ? geocoderResults[0] : undefined;
-    const coords = result && result.geometry && result.geometry.location && typeof result.geometry.location.lat === 'function' && typeof result.geometry.location.lng === 'function'
+    const coords = (result && typeof result === 'object' && result !== null && 'geometry' in result && result.geometry && 'location' in result.geometry && result.geometry.location && typeof result.geometry.location.lat === 'function' && typeof result.geometry.location.lng === 'function')
       ? {
           lat: result.geometry.location.lat(),
           lng: result.geometry.location.lng(),
