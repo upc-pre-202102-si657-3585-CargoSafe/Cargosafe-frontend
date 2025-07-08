@@ -1,15 +1,46 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import { loadGoogleMapsScript, LatLng } from "@/lib/map-service";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, Navigation, RefreshCw, Locate } from "lucide-react";
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, RefreshCw, Locate } from 'lucide-react';
+import { loadGoogleMapsScript, LatLng } from '@/lib/map-service';
 
-// Declarar window.google como any para evitar errores de tipado
+// Tipos para Google Maps
+interface GoogleMapsInstance {
+  setCenter: (location: LatLng) => void;
+  setZoom: (zoom: number) => void;
+  fitBounds: (bounds: unknown) => void;
+}
+
+interface GoogleMapsMarker {
+  setMap: (map: GoogleMapsInstance | null) => void;
+  map?: GoogleMapsInstance | null;
+}
+
 declare global {
   interface Window {
-    google: any;
+    google: {
+      maps: {
+        Map: new (element: HTMLElement, options: unknown) => GoogleMapsInstance;
+        Marker: new (options: unknown) => GoogleMapsMarker;
+        LatLngBounds: new () => {
+          extend: (location: LatLng) => void;
+        };
+        MapTypeId: {
+          ROADMAP: string;
+        };
+        SymbolPath: {
+          CIRCLE: string;
+        };
+        marker?: {
+          AdvancedMarkerElement: new (options: unknown) => GoogleMapsMarker;
+        };
+        event: {
+          clearInstanceListeners: (instance: GoogleMapsInstance) => void;
+        };
+      };
+    };
     initGoogleMaps: () => void;
     googleMapsLoaded: boolean;
   }
@@ -31,9 +62,6 @@ interface TrackingMapProps {
   showCurrentLocation?: boolean;
 }
 
-/**
- * Componente de mapa para seguimiento en tiempo real de vehículos
- */
 const TrackingMap: React.FC<TrackingMapProps> = ({
   vehicleLocations,
   centerLocation,
@@ -44,23 +72,24 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
   showCurrentLocation = true
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<GoogleMapsInstance | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   
   // Referencias para los marcadores
-  const markersRef = useRef<any[]>([]);
-  const userMarkerRef = useRef<any>(null);
+  const markersRef = useRef<GoogleMapsMarker[]>([]);
+  const userMarkerRef = useRef<GoogleMapsMarker | null>(null);
   
   // ID único para este componente de mapa, generado solo en el cliente
   const [mapId, setMapId] = useState<string | null>(null);
+  
   useEffect(() => {
     setMapId(`tracking-map-${Math.random().toString(36).substr(2, 9)}`);
   }, []);
   
   // Limpiar marcadores
-  const clearMarkers = () => {
+  const clearMarkers = useCallback(() => {
     try {
       if (markersRef.current && markersRef.current.length > 0) {
         markersRef.current.forEach(marker => {
@@ -98,10 +127,10 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
     } catch (err) {
       console.error("Error al limpiar los marcadores:", err);
     }
-  };
+  }, []);
 
   // Obtener la ubicación actual del usuario
-  const getCurrentLocation = () => {
+  const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
       console.error("Geolocalización no está soportada por este navegador.");
       return;
@@ -128,10 +157,10 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
         console.error("Error obteniendo la ubicación:", error);
       }
     );
-  };
+  }, [mapInstance, showCurrentLocation]);
 
   // Actualizar marcador de ubicación del usuario
-  const updateUserLocationMarker = (location: LatLng) => {
+  const updateUserLocationMarker = useCallback((location: LatLng) => {
     if (!mapInstance) return;
     
     // Eliminar marcador anterior si existe
@@ -205,10 +234,10 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
     } catch (e) {
       console.warn("Error al crear marcador de usuario:", e);
     }
-  };
+  }, [mapInstance]);
 
   // Actualizar marcadores de vehículos
-  const updateVehicleMarkers = () => {
+  const updateVehicleMarkers = useCallback(() => {
     if (!mapInstance) return;
     
     // Limpiar marcadores existentes
@@ -239,13 +268,18 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
               <div style="
                 position: absolute;
                 bottom: -20px;
-                white-space: nowrap;
-                background-color: rgba(0,0,0,0.7);
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(0, 0, 0, 0.8);
                 color: white;
+                padding: 2px 6px;
+                border-radius: 3px;
                 font-size: 10px;
-                padding: 2px 4px;
-                border-radius: 2px;
-              ">${vehicle.label}</div>
+                white-space: nowrap;
+                pointer-events: none;
+              ">
+                ${vehicle.label}
+              </div>
             </div>
           `;
           
@@ -262,66 +296,39 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
             position: vehicle,
             map: mapInstance,
             title: vehicle.label,
-            label: vehicle.label,
             icon: {
-              path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-              scale: 5,
-              fillColor: "#FF0000",
-              fillOpacity: 0.8,
-              strokeColor: "#000000",
-              strokeWeight: 1,
-              rotation: 0 // Sería mejor si tuviéramos la dirección del vehículo
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" width="24" height="24">
+                  <path d="M16 3H1v18h15m5-18 3 9h-3m-5-7v10m0-10 1-2m3-1h1c1 0 1 1 1 1v7c0 1-1 1-1 1h-1"/>
+                </svg>
+              `),
+              scaledSize: new window.google.maps.Size(24, 24),
+              anchor: new window.google.maps.Point(12, 12)
             }
           });
         }
         
-        // Agregar infowindow con detalles del vehículo
-        const infowindow = new window.google.maps.InfoWindow({
-          content: `
-            <div>
-              <h3 style="margin: 0; font-size: 14px;">${vehicle.label}</h3>
-              <p style="margin: 5px 0 0; font-size: 12px;">ID: ${vehicle.id}</p>
-              <p style="margin: 2px 0 0; font-size: 12px;">Última actualización: ${new Date(vehicle.lastUpdated).toLocaleString()}</p>
-            </div>
-          `
-        });
-        
-        // Agregar evento click para mostrar info
-        marker.addListener = marker.addListener || function(event, callback) {
-          window.google.maps.event.addListener(marker, event, callback);
-        };
-        
-        marker.addListener('click', () => {
-          infowindow.open(mapInstance, marker);
-        });
-        
         return marker;
       } catch (e) {
-        console.warn("Error creando marcador para vehículo:", e);
+        console.warn("Error al crear marcador de vehículo:", e);
         return null;
       }
-    }).filter(Boolean);
+    }).filter(Boolean) as GoogleMapsMarker[];
     
-    // Guardar referencias a los nuevos marcadores
     markersRef.current = newMarkers;
     
     // Ajustar el mapa para mostrar todos los marcadores
     if (newMarkers.length > 0) {
       const bounds = new window.google.maps.LatLngBounds();
       
-      // Incluir ubicación de cada vehículo
-      vehicleLocations.forEach(location => {
-        bounds.extend(location);
+      // Agregar ubicaciones de vehículos
+      vehicleLocations.forEach(vehicle => {
+        bounds.extend(vehicle);
       });
       
-      // Incluir ubicación del usuario si está disponible
+      // Agregar ubicación del usuario si está disponible
       if (userLocation && showCurrentLocation) {
         bounds.extend(userLocation);
-      }
-      
-      // Si se proporciona un centro específico, incluirlo
-      if (centerLocation) {
-        bounds.extend(centerLocation);
       }
       
       mapInstance.fitBounds(bounds);
@@ -339,12 +346,12 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
       mapInstance.setCenter(centerLocation);
       mapInstance.setZoom(12);
     }
-  };
+  }, [mapInstance, vehicleLocations, userLocation, showCurrentLocation, centerLocation, clearMarkers]);
 
   // Cargar el script de Google Maps y inicializar el mapa
   useEffect(() => {
     let isMounted = true;
-    let mapObjectInstance: any = null;
+    let mapObjectInstance: GoogleMapsInstance | null = null;
     
     const initMap = async () => {
       try {
@@ -445,21 +452,14 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
       
       setMapInstance(null);
     };
-  }, []);
+  }, [centerLocation, getCurrentLocation, onRefresh, refreshInterval, showCurrentLocation, updateVehicleMarkers, vehicleLocations, clearMarkers]);
 
   // Actualizar marcadores cuando cambian las ubicaciones de los vehículos
   useEffect(() => {
     if (mapInstance) {
       updateVehicleMarkers();
     }
-  }, [vehicleLocations, mapInstance]);
-
-  // Actualizar cuando cambia la ubicación central
-  useEffect(() => {
-    if (mapInstance && centerLocation) {
-      mapInstance.setCenter(centerLocation);
-    }
-  }, [centerLocation, mapInstance]);
+  }, [updateVehicleMarkers]);
 
   return (
     <Card className={className}>

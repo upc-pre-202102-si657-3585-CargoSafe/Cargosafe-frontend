@@ -14,7 +14,6 @@ export interface RouteInfo {
   polyline: string; // encoded polyline
 }
 
-// Tipos para Google Maps, definidos localmente
 interface GoogleMapsLatLng {
   lat(): number;
   lng(): number;
@@ -55,10 +54,34 @@ interface GoogleMapsGeocoderResult {
   };
 }
 
-// Declarar window.google como any para evitar errores de tipado
+interface GoogleMapsApi {
+  maps: {
+    DirectionsService: new () => {
+      route: (request: {
+        origin: { lat: number; lng: number };
+        destination: { lat: number; lng: number };
+        travelMode: string;
+      }, callback: (result: GoogleMapsDirectionsResult | null, status: string) => void) => void;
+    };
+    DirectionsStatus: {
+      OK: string;
+    };
+    TravelMode: {
+      DRIVING: string;
+    };
+    Geocoder: new () => {
+      geocode: (request: { address: string }, callback: (results: GoogleMapsGeocoderResult[] | null, status: string) => void) => void;
+    };
+    GeocoderStatus: {
+      OK: string;
+    };
+  };
+}
+
+// Declarar window.google con tipo apropiado
 declare global {
   interface Window {
-    google: unknown;
+    google: GoogleMapsApi;
     initGoogleMaps: () => void;
     googleMapsLoaded: boolean;
   }
@@ -69,7 +92,6 @@ let isLoadingScript = false;
 let scriptLoadPromise: Promise<void> | null = null;
 let loadAttempts = 0;
 const MAX_LOAD_ATTEMPTS = 3;
-
 
 /**
  * Carga el script de Google Maps de forma asíncrona
@@ -221,58 +243,53 @@ export const calculateRoute = async (origin: LatLng, destination: LatLng): Promi
     }
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       const directionsService = new window.google.maps.DirectionsService();
       
       directionsService.route(
         {
-          origin: origin,
-          destination: destination,
+          origin: { lat: origin.lat, lng: origin.lng },
+          destination: { lat: destination.lat, lng: destination.lng },
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
-        (result: GoogleMapsDirectionsResult, status: unknown) => {
+        (result, status) => {
           if (status === window.google.maps.DirectionsStatus.OK && result) {
             const route = result.routes[0];
             const leg = route.legs[0];
             
-            // Extraer la información de la ruta
-            const routeInfo: RouteInfo = {
-              distance: leg.distance ? leg.distance.value / 1000 : 0, // Convertir a km
-              duration: leg.duration ? leg.duration.value / 60 : 0,  // Convertir a minutos
+            resolve({
+              distance: leg.distance.value / 1000, // Convertir de metros a kilómetros
+              duration: leg.duration.value / 60, // Convertir de segundos a minutos
               polyline: route.overview_polyline.points
-            };
-            
-            resolve(routeInfo);
+            });
           } else {
-            console.error("Error en DirectionsService:", status);
-            
-            // Calcular distancia aproximada en línea recta como fallback
+            console.error("Error al calcular la ruta:", status);
+            // Devolver una estimación aproximada en caso de error
             const distance = Math.sqrt(
               Math.pow((destination.lat - origin.lat) * 111, 2) + 
               Math.pow((destination.lng - origin.lng) * 111 * Math.cos(origin.lat * Math.PI / 180), 2)
             );
             
             resolve({
-              distance: distance * 1.3, // Factor de ruta aproximado
-              duration: distance * 1.3 / 50 * 60, // Estimación de tiempo (50 km/h)
+              distance: distance * 1.3,
+              duration: distance * 1.3 / 50 * 60,
               polyline: ""
             });
           }
         }
       );
     } catch (error) {
-      console.error("Error al calcular la ruta:", error);
-      
-      // Calcular distancia aproximada en línea recta como fallback
+      console.error("Error al usar DirectionsService:", error);
+      // Devolver una estimación aproximada en caso de error
       const distance = Math.sqrt(
         Math.pow((destination.lat - origin.lat) * 111, 2) + 
         Math.pow((destination.lng - origin.lng) * 111 * Math.cos(origin.lat * Math.PI / 180), 2)
       );
       
       resolve({
-        distance: distance * 1.3, // Factor de ruta aproximado
-        duration: distance * 1.3 / 50 * 60, // Estimación de tiempo (50 km/h)
+        distance: distance * 1.3,
+        duration: distance * 1.3 / 50 * 60,
         polyline: ""
       });
     }
@@ -280,50 +297,46 @@ export const calculateRoute = async (origin: LatLng, destination: LatLng): Promi
 };
 
 /**
- * Obtener las coordenadas de una dirección utilizando geocoding
+ * Convierte una dirección en coordenadas lat/lng usando Google Maps Geocoding API
  */
 export const geocodeAddress = async (address: string): Promise<LatLng> => {
-  // Valores predeterminados para Lima, Perú en caso de fallo
-  const DEFAULT_LOCATION: LatLng = { lat: -12.0464, lng: -77.0428 };
-  
-  try {
-    // Asegurarse de que Google Maps está cargado
-    if (!window.google || !window.google.maps) {
+  // Asegurarse de que Google Maps está cargado
+  if (!window.google || !window.google.maps) {
+    try {
       await loadGoogleMapsScript();
+    } catch (error) {
+      console.error("No se pudo cargar Google Maps para geocodificar:", error);
+      throw new Error("No se pudo cargar Google Maps para geocodificar la dirección");
     }
-    
-    // Verificar nuevamente si se pudo cargar Google Maps
-    if (!window.google || !window.google.maps) {
-      console.error("No se pudo cargar Google Maps para geocodificación");
-      return DEFAULT_LOCATION;
-    }
-
-    return new Promise((resolve, reject) => {
-      try {
-        const geocoder = new window.google.maps.Geocoder();
-        
-        geocoder.geocode(
-          { address }, 
-          (results: GoogleMapsGeocoderResult[], status: unknown) => {
-            if (status === window.google.maps.GeocoderStatus.OK && results && results[0]) {
-              const location = results[0].geometry.location;
-              resolve({
-                lat: location.lat(),
-                lng: location.lng()
-              });
-            } else {
-              console.error(`Error en geocoding: ${status}`);
-              resolve(DEFAULT_LOCATION);
-            }
-          }
-        );
-      } catch (error) {
-        console.error("Error al crear geocoder:", error);
-        resolve(DEFAULT_LOCATION);
-      }
-    });
-  } catch (error) {
-    console.error("Error en geocodeAddress:", error);
-    return DEFAULT_LOCATION;
   }
+
+  return new Promise((resolve) => {
+    try {
+      const geocoder = new window.google.maps.Geocoder();
+      
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
+          const location = results[0].geometry.location;
+          resolve({
+            lat: location.lat(),
+            lng: location.lng()
+          });
+        } else {
+          console.error("Error al geocodificar la dirección:", status);
+          // Devolver coordenadas por defecto (Lima, Perú) en caso de error
+          resolve({
+            lat: -12.0464,
+            lng: -77.0428
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Error al usar Geocoder:", error);
+      // Devolver coordenadas por defecto en caso de error
+      resolve({
+        lat: -12.0464,
+        lng: -77.0428
+      });
+    }
+  });
 };
