@@ -54,8 +54,13 @@ export default function PendingServicesPage() {
         setPendingServices(services);
       } catch (err: unknown) {
         let errorMsg = "Error al obtener servicios pendientes";
-        if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
-          errorMsg = (err as any).message;
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "message" in err &&
+          typeof (err as { message?: unknown }).message === "string"
+        ) {
+          errorMsg = (err as { message: string }).message;
         }
         console.error("Error al obtener servicios pendientes:", err);
         setError(errorMsg);
@@ -101,8 +106,13 @@ export default function PendingServicesPage() {
       setSelectedServices(prev => prev.filter(serviceId => serviceId !== id));
     } catch (err: unknown) {
       let errorMsg = "Error al aceptar el servicio";
-      if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
-        errorMsg = (err as any).message;
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "message" in err &&
+        typeof (err as { message?: unknown }).message === "string"
+      ) {
+        errorMsg = (err as { message: string }).message;
       }
       console.error("Error al aceptar el servicio:", err);
       setError(`Error al aceptar el servicio: ${errorMsg}`);
@@ -126,8 +136,13 @@ export default function PendingServicesPage() {
       setSelectedServices(prev => prev.filter(serviceId => serviceId !== id));
     } catch (err: unknown) {
       let errorMsg = "Error al rechazar el servicio";
-      if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
-        errorMsg = (err as any).message;
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "message" in err &&
+        typeof (err as { message?: unknown }).message === "string"
+      ) {
+        errorMsg = (err as { message: string }).message;
       }
       console.error("Error al rechazar el servicio:", err);
       setError(`Error al rechazar el servicio: ${errorMsg}`);
@@ -158,8 +173,13 @@ export default function PendingServicesPage() {
       setPendingServices(services);
     } catch (err: unknown) {
       let errorMsg = "Error al actualizar los servicios";
-      if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string") {
-        errorMsg = (err as any).message;
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "message" in err &&
+        typeof (err as { message?: unknown }).message === "string"
+      ) {
+        errorMsg = (err as { message: string }).message;
       }
       console.error("Error al actualizar servicios:", err);
       setError(errorMsg || "Error al actualizar los servicios");
