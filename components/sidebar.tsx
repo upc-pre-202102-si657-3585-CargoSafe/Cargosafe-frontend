@@ -8,13 +8,12 @@ import {
   TruckIcon, 
   ClipboardCheckIcon, 
   UserIcon, 
-  CogIcon, 
+ 
   LogOutIcon, 
   ChevronLeftIcon,
   ChevronRightIcon,
   BoxesIcon,
   UsersIcon,
-  BellIcon,
   HistoryIcon,
   MapIcon
 } from 'lucide-react';
@@ -168,19 +167,6 @@ export function Sidebar({
     ...(userRole === UserRole.ENTREPRENEUR ? entrepreneurNavItems : []),
     ...(userRole === UserRole.COMPANY ? companyNavItems : [])
   ].filter(item => item.roles.includes(userRole));
-
-  // Determinar la URL base según el rol
-  const getBaseUrl = () => {
-    if (userRole === UserRole.ENTREPRENEUR) return '/entrepreneur';
-    if (userRole === UserRole.COMPANY) return '/company';
-    return '';
-  };
-
-  // Redirigir a la página de inicio correspondiente
-  const redirectToHome = () => {
-    const baseUrl = getBaseUrl();
-    return `${baseUrl}/dashboard`;
-  };
 
   // Verificar si una ruta está activa
   const isActive = (href: string) => {

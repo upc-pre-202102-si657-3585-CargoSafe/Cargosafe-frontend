@@ -232,7 +232,8 @@ export default function DriversPage() {
         transition={{ duration: 0.3 }}
       >
 
-        <DriversHeader totalDrivers={drivers.length}>
+        <DriversHeader>
+          <span className="text-muted-foreground">{drivers.length} conductores</span>
           <AddDriverDialog
             isOpen={isAddDialogOpen}
             onOpenChange={setIsAddDialogOpen}

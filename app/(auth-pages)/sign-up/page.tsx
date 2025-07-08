@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signUpAction } from "@/app/actions";
 import { FormMessage, Message } from "@/app/components/form-message";
 import { SubmitButton } from "@/app/components/submit-button";
@@ -27,13 +27,15 @@ import {
 import { UserRole } from "@/app/interfaces";
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Define error type to avoid using 'any'
-interface ApiError {
-  digest?: string;
-  message?: string;
+export default function Page() {
+  return (
+    <Suspense>
+      <SignUp />
+    </Suspense>
+  );
 }
 
-export default function SignUp() {
+function SignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [message, setMessage] = useState<Message>({});
@@ -107,8 +109,18 @@ export default function SignUp() {
             }, 2000);
           }
         }
-      } catch (error: ApiError) {
-        if (error.digest?.includes('NEXT_REDIRECT')) {
+      } catch (error: unknown) {
+        let isRedirect = false;
+        let errorMessage = 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+        if (typeof error === 'object' && error !== null) {
+          if ('digest' in error && typeof (error as { digest?: unknown }).digest === 'string' && (error as { digest: string }).digest.includes('NEXT_REDIRECT')) {
+            isRedirect = true;
+          }
+          if ('message' in error && typeof (error as { message?: unknown }).message === 'string') {
+            errorMessage = (error as { message: string }).message;
+          }
+        }
+        if (isRedirect) {
           console.log("[SignUp] Registro exitoso con redirección");
           setMessage({
             type: 'success',
@@ -122,7 +134,7 @@ export default function SignUp() {
         console.error("[SignUp] Error en la acción:", error);
         setMessage({
           type: 'error',
-          text: error.message || 'Error al registrar usuario. Por favor, inténtalo de nuevo.'
+          text: errorMessage
         });
       }
     } catch (error: unknown) {

@@ -39,7 +39,7 @@ export default function HistoryPage() {
     completed: Array.isArray(services) ? services.filter(s => s?.status?.name === StatusName.COMPLETED).length : 0,
     inProgress: Array.isArray(services) ? services.filter(s => s?.status?.name === StatusName.IN_PROGRESS || s?.status?.name === StatusName.ACCEPTED).length : 0,
     pending: Array.isArray(services) ? services.filter(s => s?.status?.name === StatusName.PENDING).length : 0,
-    cancelled: Array.isArray(services) ? services.filter(s => s?.status?.name === StatusName.CANCELLED).length : 0,
+    cancelled: Array.isArray(services) ? services.filter(s => s?.status?.name === StatusName.REJECTED).length : 0,
   };
 
   const completionRate = stats.total > 0 
@@ -94,9 +94,8 @@ export default function HistoryPage() {
           setError("No se recibieron datos del servidor");
           setServices([]);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error al cargar los servicios:", error);
-        
         if (axios.isAxiosError(error)) {
           if (error.response?.status === 401) {
             setError("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
@@ -104,15 +103,16 @@ export default function HistoryPage() {
             setError("No tienes permisos para acceder a estos recursos.");
           } else if (error.response?.status === 404) {
             setError("No se encontró el recurso solicitado.");
-          } else if (error.message.includes('Network Error')) {
+          } else if (typeof error.message === 'string' && error.message.includes('Network Error')) {
             setError("Error de conexión. Verifica tu conexión a Internet.");
           } else {
             setError(`Error del servidor: ${error.response?.statusText || error.message}`);
           }
+        } else if (typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+          setError((error as { message: string }).message);
         } else {
           setError("Ocurrió un error al cargar los servicios.");
         }
-        
         setServices([]);
       } finally {
         setIsLoading(false);
@@ -130,7 +130,7 @@ export default function HistoryPage() {
       (activeTab === "active" && (service?.status?.name === StatusName.IN_PROGRESS || service?.status?.name === StatusName.ACCEPTED)) ||
       (activeTab === "pending" && service?.status?.name === StatusName.PENDING) ||
       (activeTab === "completed" && service?.status?.name === StatusName.COMPLETED) ||
-      (activeTab === "cancelled" && service?.status?.name === StatusName.CANCELLED);
+      (activeTab === "cancelled" && service?.status?.name === StatusName.REJECTED);
     
     const searchMatch = 
       searchTerm === "" ||

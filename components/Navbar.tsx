@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { BellIcon, MenuIcon, UserIcon } from 'lucide-react';
+import { BellIcon, MenuIcon } from 'lucide-react';
 import { ModeToggle } from '@/components/ModeToggle';
 import { Button } from '@/components/ui/button';
 import { 

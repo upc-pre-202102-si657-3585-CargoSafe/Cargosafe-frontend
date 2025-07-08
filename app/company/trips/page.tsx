@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Eye, MapPin, Calendar, User2, Package2, AlertCircle } from "lucide-react";
 import { API_ENDPOINTS, AuthUtils } from "@/app/config/api";
 import { useRouter } from "next/navigation";
+import type { RequestService } from "@/app/interfaces";
 
 export default function TripsPage() {
-  const [trips, setTrips] = useState<any[]>([]);
+  const [trips, setTrips] = useState<RequestService[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -25,8 +26,17 @@ export default function TripsPage() {
       if (!res.ok) throw new Error("No se pudieron obtener los viajes");
       const data = await res.json();
       setTrips(Array.isArray(data) ? data : []);
-    } catch (e: any) {
-      setError(e.message || "Error al cargar los viajes");
+    } catch (e: unknown) {
+      let errorMsg = "Error al cargar los viajes";
+      if (
+        typeof e === "object" &&
+        e !== null &&
+        "message" in e &&
+        typeof (e as { message?: unknown }).message === "string"
+      ) {
+        errorMsg = (e as { message: string }).message;
+      }
+      setError(errorMsg);
       setTrips([]);
     } finally {
       setLoading(false);

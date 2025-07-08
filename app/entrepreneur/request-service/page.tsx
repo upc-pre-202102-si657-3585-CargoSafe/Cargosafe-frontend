@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+
 import { useRouter } from "next/navigation";
 
 // UI Components
@@ -35,9 +35,8 @@ import {
 } from "./utils/geo-utils";
 
 // API Config
-import { API_ENDPOINTS, AuthUtils } from "@/app/config/api";
+import { AuthUtils } from "@/app/config/api";
 import { RequestServiceManager } from "@/app/services/request-service";
-import { loadGoogleMapsScript } from "@/lib/map-service";
 
 export default function RequestServicePage() {
   const router = useRouter();
@@ -108,19 +107,8 @@ export default function RequestServicePage() {
     }
   };
 
-  // Observar cambios en las direcciones para geocodificar
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'pickupAddress' || name === 'destinationAddress') {
-        handleAddressChange();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
-
   // Gestionar cambios en las direcciones
-  const handleAddressChange = async () => {
+  const handleAddressChange = React.useCallback(async () => {
     const pickupAddress = form.watch('pickupAddress');
     const destinationAddress = form.watch('destinationAddress');
 
@@ -148,7 +136,18 @@ export default function RequestServicePage() {
     } catch (error) {
       console.error("Error al geocodificar direcciones:", error);
     }
-  };
+  }, [form]);
+
+  // Observar cambios en las direcciones para geocodificar
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'pickupAddress' || name === 'destinationAddress') {
+        handleAddressChange();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, handleAddressChange]);
 
   // Enviar el formulario
   const onSubmit = async (data: FormValues) => {
@@ -233,35 +232,41 @@ export default function RequestServicePage() {
           setSubmitSuccess(true);
           setIsSubmitting(false);
         }, 1000);
-      } catch (apiError: any) {
+      } catch (apiError: unknown) {
         console.error("Error específico de la API:", apiError);
-        
-        // Verificar si es un error de autenticación y manejarlo adecuadamente
-        if (apiError.message && (
-            apiError.message.includes("sesión") || 
-            apiError.message.includes("token") ||
-            apiError.message.includes("autenticación") ||
-            apiError.message.includes("iniciar sesión")
-        )) {
+        if (
+          typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof (apiError as { message: unknown }).message === 'string' &&
+          ((apiError as { message: string }).message.includes("sesión") ||
+            (apiError as { message: string }).message.includes("token") ||
+            (apiError as { message: string }).message.includes("autenticación") ||
+            (apiError as { message: string }).message.includes("iniciar sesión"))
+        ) {
           setSubmitError("Necesitas iniciar sesión para enviar solicitudes. Por favor, inicia sesión y vuelve a intentarlo.");
-          
-          // Redirigir a login después de 3 segundos
           setTimeout(() => {
             window.location.href = "/login";
           }, 3000);
-        } else if (apiError.response?.data?.message) {
-          setSubmitError(`Error del servidor: ${apiError.response.data.message}`);
-        } else if (apiError.message) {
-          setSubmitError(apiError.message);
+        } else if (
+          typeof apiError === 'object' && apiError !== null &&
+          'response' in apiError &&
+          typeof (apiError as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+        ) {
+          setSubmitError(`Error del servidor: ${(apiError as { response: { data: { message: string } } }).response.data.message}`);
+        } else if (
+          typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof (apiError as { message: unknown }).message === 'string'
+        ) {
+          setSubmitError((apiError as { message: string }).message);
         } else {
           setSubmitError("Ocurrió un error al procesar tu solicitud. Verifica tu conexión e intenta nuevamente.");
         }
-        
         setIsSubmitting(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al preparar la solicitud:", error);
-      setSubmitError(`Error al preparar tu solicitud: ${error.message}`);
+      let errorMessage = 'Error al preparar tu solicitud.';
+      if (typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message: unknown }).message === 'string') {
+        errorMessage = `Error al preparar tu solicitud: ${(error as { message: string }).message}`;
+      }
+      setSubmitError(errorMessage);
       setIsSubmitting(false);
     }
   };
@@ -284,7 +289,7 @@ export default function RequestServicePage() {
             <SuccessMessage />
         ) : (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit as any)}>
+              <form onSubmit={form.handleSubmit((data) => onSubmit(data))}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <motion.div variants={itemVariants}>
                     <TabsList className="grid grid-cols-3 mb-8">

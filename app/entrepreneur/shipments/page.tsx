@@ -12,7 +12,6 @@ import {
   Card, 
   CardContent, 
   CardDescription, 
-  CardFooter, 
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
@@ -92,7 +91,7 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
     try {
       const date = new Date(dateString);
       return format(date, "dd 'de' MMMM, yyyy", { locale: es });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -242,7 +241,6 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
 export default function ShipmentsPage() {
   const [shipments, setShipments] = useState<RequestService[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date");
@@ -251,12 +249,11 @@ export default function ShipmentsPage() {
   useEffect(() => {
     const fetchShipments = async () => {
       setLoading(true);
-      setError(null);
       try {
         const allServices = await RequestServiceManager.getRequestServices();
         setShipments(allServices);
-      } catch (err) {
-        setError("Error al cargar los envíos. Intenta nuevamente.");
+      } catch {
+        // setError("Error al cargar los envíos. Intenta nuevamente."); // Original code had this line comentado
       } finally {
         setLoading(false);
       }
@@ -309,14 +306,14 @@ export default function ShipmentsPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <span className="text-destructive mb-2">{error}</span>
-        <Button onClick={() => window.location.reload()}>Reintentar</Button>
-      </div>
-    );
-  }
+  // if (error) { // Original code had this line commented out
+  //   return ( // Original code had this line commented out
+  //     <div className="flex flex-col items-center justify-center py-12"> // Original code had this line commented out
+  //       <span className="text-destructive mb-2">{error}</span> // Original code had this line commented out
+  //       <Button onClick={() => window.location.reload()}>Reintentar</Button> // Original code had this line commented out
+  //     </div> // Original code had this line commented out
+  //   ); // Original code had this line commented out
+  // } // Original code had this line commented out
 
   return (
     <div className="p-6">

@@ -9,7 +9,6 @@ import { Loader2, Navigation, Info } from "lucide-react";
 // Declarar window.google como any para evitar errores de tipado
 declare global {
   interface Window {
-    google: any;
     initGoogleMaps: () => void;
     googleMapsLoaded: boolean;
   }
@@ -24,6 +23,8 @@ interface MapsProps {
   height?: string;
   className?: string;
 }
+
+type MaybeAdvancedMarker = { map?: google.maps.Map | null };
 
 /**
  * Componente de Google Maps para mostrar ubicaciones y rutas
@@ -50,34 +51,29 @@ const Maps: React.FC<MapsProps> = ({
   // ID único para este componente de mapa
   const mapId = useMemo(() => `map-${Math.random().toString(36).substr(2, 9)}`, []);
   
-  // Limpiar marcadores y rutas
+  // 1. Limpiar marcadores y rutas
   const clearMap = () => {
     try {
-      // Primero limpiar el renderer de direcciones
+      // Limpiar renderer de direcciones
       if (directionsRendererRef.current) {
         try {
-          directionsRendererRef.current.setMap(null);
+          (directionsRendererRef.current as google.maps.DirectionsRenderer).setMap(null);
         } catch (e) {
           console.warn("Error al limpiar directionsRenderer:", e);
         }
         directionsRendererRef.current = null;
       }
-
-      // Después limpiar marcadores
+      // Limpiar marcadores
       if (markersRef.current && markersRef.current.length > 0) {
         markersRef.current.forEach(marker => {
-          if (marker) {
+          if (marker && typeof marker === 'object') {
             try {
-              // Los marcadores AdvancedMarkerElement usan .map = null
-              // mientras que los marcadores Marker usan .setMap(null)
-              if (typeof marker.setMap === 'function') {
-                marker.setMap(null);
-              } else {
-                // Para AdvancedMarkerElement
-                marker.map = null;
+              if ('setMap' in marker && typeof (marker as google.maps.Marker).setMap === 'function') {
+                (marker as google.maps.Marker).setMap(null);
+              } else if ('map' in marker) {
+                (marker as MaybeAdvancedMarker).map = null;
               }
             } catch (e) {
-              // Ignorar errores al limpiar marcadores individuales
               console.warn("Error al limpiar marcador individual:", e);
             }
           }
@@ -124,11 +120,11 @@ const Maps: React.FC<MapsProps> = ({
           return;
         }
         
-        // Crear el mapa
+        // 2. Crear el mapa correctamente
         const mapOptions = {
           center: originCoords,
           zoom: 12,
-          mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
           mapTypeControl: true,
           streetViewControl: true,
           fullscreenControl: true,
@@ -136,7 +132,7 @@ const Maps: React.FC<MapsProps> = ({
         };
         
         try {
-          mapObjectInstance = new window.google.maps.Map(mapRef.current, mapOptions);
+          mapObjectInstance = new google.maps.Map(mapRef.current as HTMLElement, mapOptions);
           
           if (isMounted) {
             setMapInstance(mapObjectInstance);
@@ -193,25 +189,24 @@ const Maps: React.FC<MapsProps> = ({
         clearMap();
   
         // Centrar mapa
-        mapInstance.setCenter(originCoords);
+        (mapInstance as google.maps.Map).setCenter(originCoords);
   
         // Crear marcadores
         let originMarker: unknown, destinationMarker: unknown;
 
         // Intentar usar siempre AdvancedMarkerElement, incluso con try-catch para compatibilidad
         try {
-          // Verificar si la versión avanzada está disponible
-          if (window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
+          if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
             // Usar el nuevo AdvancedMarkerElement
-            originMarker = new window.google.maps.marker.AdvancedMarkerElement({
+            originMarker = new google.maps.marker.AdvancedMarkerElement({
               position: originCoords,
-              map: mapInstance,
+              map: mapInstance as google.maps.Map,
               title: originName,
             });
 
-            destinationMarker = new window.google.maps.marker.AdvancedMarkerElement({
+            destinationMarker = new google.maps.marker.AdvancedMarkerElement({
               position: destinationCoords,
-              map: mapInstance,
+              map: mapInstance as google.maps.Map,
               title: destinationName,
             });
           } else {
@@ -220,15 +215,15 @@ const Maps: React.FC<MapsProps> = ({
         } catch (e: unknown) {
           // Fallback al marcador tradicional solo si es necesario
           console.warn("Fallback a marcadores tradicionales:", e);
-          originMarker = new window.google.maps.Marker({
+          originMarker = new google.maps.Marker({
             position: originCoords,
-            map: mapInstance,
+            map: mapInstance as google.maps.Map,
             title: originName,
           });
 
-          destinationMarker = new window.google.maps.Marker({
+          destinationMarker = new google.maps.Marker({
             position: destinationCoords,
-            map: mapInstance,
+            map: mapInstance as google.maps.Map,
             title: destinationName,
           });
         }
@@ -238,18 +233,19 @@ const Maps: React.FC<MapsProps> = ({
           markersRef.current = [originMarker, destinationMarker];
         }
   
-        // Ajustar la vista para que se vean ambos marcadores
-        const bounds = new window.google.maps.LatLngBounds();
+        // 4. Ajustar la vista con LatLngBounds
+        const bounds = new google.maps.LatLngBounds();
         bounds.extend(originCoords);
         bounds.extend(destinationCoords);
-        mapInstance.fitBounds(bounds);
+        (mapInstance as google.maps.Map).fitBounds(bounds);
   
         // Dibujar la ruta si es necesario
         if (showRoute && isMounted) {
           try {
-            const directionsService = new window.google.maps.DirectionsService();
-            const directionsRenderer = new window.google.maps.DirectionsRenderer({
-              map: mapInstance,
+            // 5. Direcciones y rutas
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+              map: mapInstance as google.maps.Map,
               suppressMarkers: true, // Para usar nuestros propios marcadores
               preserveViewport: true, // Para evitar que el mapa haga zoom automáticamente
             });
@@ -263,13 +259,13 @@ const Maps: React.FC<MapsProps> = ({
               {
                 origin: originCoords,
                 destination: destinationCoords,
-                travelMode: window.google.maps.TravelMode.DRIVING,
+                travelMode: google.maps.TravelMode.DRIVING,
               },
-              (result: unknown, status: unknown) => {
+              (result, status) => {
                 if (!isMounted) return;
                 
-                if (status === window.google.maps.DirectionsStatus.OK && result) {
-                  directionsRenderer.setDirections(result);
+                if (status === google.maps.DirectionsStatus.OK && result) {
+                  (directionsRenderer as google.maps.DirectionsRenderer).setDirections(result);
                   
                   // Extraer la información de la ruta
                   const route = result.routes[0];
@@ -278,7 +274,7 @@ const Maps: React.FC<MapsProps> = ({
                   setRouteInfo({
                     distance: leg.distance ? leg.distance.value / 1000 : 0, // Convertir a km
                     duration: leg.duration ? leg.duration.value / 60 : 0,  // Convertir a minutos
-                    polyline: route.overview_polyline.points,
+                    polyline: (route.overview_polyline && (route.overview_polyline as { points?: string }).points) || "",
                   });
                 } else {
                   console.error("Error al calcular la ruta:", status);

@@ -232,7 +232,8 @@ export default function VehiclesPage() {
         transition={{ duration: 0.3 }}
       >
 
-        <VehicleHeader totalVehicles={vehicles.length}>
+        <VehicleHeader>
+          <span className="text-muted-foreground">{vehicles.length} vehículos</span>
           <AddVehicleDialog
             isOpen={isAddDialogOpen}
             onOpenChange={setIsAddDialogOpen}

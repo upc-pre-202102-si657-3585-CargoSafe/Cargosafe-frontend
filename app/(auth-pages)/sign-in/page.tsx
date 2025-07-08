@@ -11,7 +11,7 @@ import NavbarAuth from "@/app/auth/components/navbar-auth";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { LoadingOverlay } from "@/app/components/loading-overlay";
 import { useFormStatus } from 'react-dom';
 import { useOptimizedForm } from "@/hooks/useOptimizedForm";
@@ -38,7 +38,15 @@ function FormStatusIndicator() {
   );
 }
 
-export default function SignIn() {
+export default function Page() {
+  return (
+    <Suspense>
+      <SignIn />
+    </Suspense>
+  );
+}
+
+function SignIn() {
   const searchParams = useSearchParams();
   const [message, setMessage] = useState<Message>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

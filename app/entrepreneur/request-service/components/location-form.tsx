@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { MapContainer } from "@/components/map-container";
 import { FormValues } from "../constants";
 import { DatePicker } from "./date-picker";
-import { LatLng } from "@/lib/map-service";
 import { LocationDetails } from "../utils/geo-utils";
 
 interface LocationFormProps {

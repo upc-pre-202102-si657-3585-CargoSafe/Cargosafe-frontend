@@ -10,11 +10,7 @@ import {
 } from "@/components/ui/tabs";
 import { 
   Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+  CardContent 
 } from "@/components/ui/card";
 import { 
   Input 
@@ -31,15 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -47,12 +35,7 @@ import {
   Bell, 
   Shield, 
   History,
-  Settings,
   Edit,
-  Save,
-  Upload,
-  X,
-  Check,
   Lock,
   Mail,
   Phone
@@ -63,14 +46,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Badge } from "@/components/ui/badge";
 import { AuthUtils, API_ENDPOINTS } from "@/app/config/api";
 
+interface UserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  street: string;
+  number: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
 // Esquemas de validación para los formularios
-const profileFormSchema = z.object({
-  fullName: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-  email: z.string().email({ message: "Email inválido" }),
-  phone: z.string().min(9, { message: "Número de teléfono inválido" }),
-  address: z.string().optional(),
-  bio: z.string().optional()
-});
+// (profileFormSchema was unused, so removed)
 
 const securityFormSchema = z.object({
   currentPassword: z.string().min(1, { message: "Ingrese su contraseña actual" }),
@@ -109,8 +98,8 @@ const ProfileTab = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [profile, setProfile] = useState<any>(null);
-  const [avatarSrc, setAvatarSrc] = useState("/avatars/01.png");
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  // Removed setAvatarSrc and avatarSrc since not used
 
   // Formulario react-hook-form
   const form = useForm({
@@ -138,7 +127,7 @@ const ProfileTab = () => {
       setError("");
       setSuccess("");
       try {
-        const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId));
+        const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId as number));
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
@@ -160,6 +149,7 @@ const ProfileTab = () => {
           setError("Error al obtener el perfil");
         }
       } catch (e) {
+        console.error(e);
         setError("Error de red al obtener el perfil");
       } finally {
         setLoading(false);
@@ -170,12 +160,12 @@ const ProfileTab = () => {
   }, [userId]);
 
   // Crear perfil
-  const handleCreate = async (values: any) => {
+  const handleCreate = async (values: Omit<UserProfile, 'id'>) => {
     setError("");
     setSuccess("");
     setLoading(true);
     try {
-      const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId), {
+      const res = await fetch(API_ENDPOINTS.PROFILES.BY_USER_ID(userId as number), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -189,6 +179,7 @@ const ProfileTab = () => {
         setError("No se pudo crear el perfil");
       }
     } catch (e) {
+      console.error(e);
       setError("Error de red al crear el perfil");
     } finally {
       setLoading(false);
@@ -196,12 +187,12 @@ const ProfileTab = () => {
   };
 
   // Editar perfil
-  const handleEdit = async (values: any) => {
+  const handleEdit = async (values: Omit<UserProfile, 'id'>) => {
     setError("");
     setSuccess("");
     setLoading(true);
     try {
-      const res = await fetch(API_ENDPOINTS.PROFILES.BY_ID(profile.id), {
+      const res = await fetch(API_ENDPOINTS.PROFILES.BY_ID(profile!.id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -209,12 +200,13 @@ const ProfileTab = () => {
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
-    setIsEditing(false);
+        setIsEditing(false);
         setSuccess("Perfil actualizado exitosamente");
       } else {
         setError("No se pudo actualizar el perfil");
       }
     } catch (e) {
+      console.error(e);
       setError("Error de red al actualizar el perfil");
     } finally {
       setLoading(false);
@@ -231,7 +223,7 @@ const ProfileTab = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Avatar className="h-24 w-24 border-2 border-primary/20">
-            <AvatarImage src={avatarSrc} alt="Avatar" />
+            <AvatarImage src={"/avatars/01.png"} alt="Avatar" />
             <AvatarFallback>{profile ? `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}` : "U"}</AvatarFallback>
           </Avatar>
           <div>
@@ -242,11 +234,11 @@ const ProfileTab = () => {
           </div>
         </div>
         <div className="flex space-x-2">
-          {profile && !isEditing && (
+          {Boolean(profile) && !isEditing ? (
             <Button size="sm" onClick={() => setIsEditing(true)} aria-label="Editar perfil">
               <Edit className="h-4 w-4 mr-2" />Editar Perfil
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
       <Separator />

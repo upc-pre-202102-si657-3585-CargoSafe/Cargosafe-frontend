@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 
 type ThemeProviderProps = {
   children: ReactNode;
-  attribute?: string;
+  attribute?: "class" | `data-${string}` | Array<"class" | `data-${string}`>;
   defaultTheme?: string;
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;

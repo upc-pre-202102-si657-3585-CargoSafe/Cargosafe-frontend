@@ -1,4 +1,4 @@
-import { LatLng, geocodeAddress, loadGoogleMapsScript } from "@/lib/map-service";
+import { LatLng, loadGoogleMapsScript } from "@/lib/map-service";
 
 /**
  * Calcula la distancia aproximada entre dos puntos en línea recta
@@ -52,15 +52,42 @@ export const DEFAULT_DESTINATION_LOCATION: LocationDetails = {
 /**
  * Extrae información de ubicación a partir de resultados de geocodificación
  */
-export const extractLocationDetails = (geocoderResults: any): LocationDetails | null => {
-  if (!geocoderResults || !geocoderResults.length) return null;
+export const extractLocationDetails = (geocoderResults: unknown): LocationDetails | null => {
+  if (!geocoderResults || !Array.isArray(geocoderResults) || geocoderResults.length === 0) return null;
   
   try {
-    const result = geocoderResults[0];
-    const coords = {
-      lat: result.geometry.location.lat(),
-      lng: result.geometry.location.lng()
-    };
+    const result = Array.isArray(geocoderResults) ? geocoderResults[0] : undefined;
+    let coords = { lat: 0, lng: 0 };
+    if (
+      result &&
+      typeof result === 'object' &&
+      result !== null &&
+      'geometry' in result &&
+      typeof (result as { geometry?: unknown }).geometry === 'object' &&
+      (result as { geometry?: unknown }).geometry !== null
+    ) {
+      const geometry = (result as { geometry: unknown }).geometry;
+      if (
+        geometry &&
+        typeof geometry === 'object' &&
+        'location' in geometry &&
+        typeof (geometry as { location?: unknown }).location === 'object' &&
+        (geometry as { location?: unknown }).location !== null
+      ) {
+        const location = (geometry as { location: unknown }).location;
+        if (
+          location &&
+          typeof location === 'object' &&
+          'lat' in location && typeof (location as { lat?: unknown }).lat === 'function' &&
+          'lng' in location && typeof (location as { lng?: unknown }).lng === 'function'
+        ) {
+          coords = {
+            lat: (location as { lat: () => number }).lat(),
+            lng: (location as { lng: () => number }).lng(),
+          };
+        }
+      }
+    }
     
     // Extraer detalles de dirección
     let country = "Perú"; // Valor por defecto
@@ -68,20 +95,37 @@ export const extractLocationDetails = (geocoderResults: any): LocationDetails | 
     let district = ""; // Valor por defecto
     
     // Extraer componentes de la dirección
-    if (result.address_components) {
-      for (const component of result.address_components) {
-        if (component.types.includes("country")) {
-          country = component.long_name;
-        }
-        
-        if (component.types.includes("administrative_area_level_1")) {
-          department = component.long_name;
-        }
-        
-        if (component.types.includes("administrative_area_level_2") || 
-            component.types.includes("locality") ||
-            component.types.includes("sublocality_level_1")) {
-          district = component.long_name;
+    if (
+      result &&
+      typeof result === 'object' &&
+      'address_components' in result &&
+      Array.isArray((result as { address_components?: unknown }).address_components)
+    ) {
+      const addressComponents = (result as { address_components: unknown[] }).address_components;
+      for (const component of addressComponents) {
+        if (
+          component &&
+          typeof component === 'object' &&
+          'types' in component &&
+          Array.isArray((component as { types?: unknown }).types) &&
+          'long_name' in component &&
+          typeof (component as { long_name?: unknown }).long_name === 'string'
+        ) {
+          const types = (component as { types: string[] }).types;
+          const longName = (component as { long_name: string }).long_name;
+          if (types.includes("country")) {
+            country = longName;
+          }
+          if (types.includes("administrative_area_level_1")) {
+            department = longName;
+          }
+          if (
+            types.includes("administrative_area_level_2") ||
+            types.includes("locality") ||
+            types.includes("sublocality_level_1")
+          ) {
+            district = longName;
+          }
         }
       }
     }

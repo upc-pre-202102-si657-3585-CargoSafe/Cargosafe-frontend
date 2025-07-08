@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState } from "react";
+import React, {  useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,6 @@ import { RequestService } from "@/app/interfaces";
 import { Eye, MapPin, Package, Calendar, Weight } from "lucide-react";
 import { ServiceDetail } from "./ServiceDetail";
 import { formatDateConsistently } from "../utils/dateUtils";
-import { StaticMap } from "@/components/static-map";
 
 
 const cardVariants = {
@@ -54,6 +53,7 @@ export const ServiceCard = ({
   onAccept,
   onReject
 }: ServiceCardProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!service || !service.id) {
     console.error("Servicio inválido o sin ID", service);
@@ -94,8 +94,6 @@ export const ServiceCard = ({
     : statusName === "COMPLETED"
     ? "bg-purple-500/20 text-purple-700 dark:bg-purple-500/30 dark:text-purple-300"
     : "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/30 dark:text-yellow-300";
-
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // Handler para aceptar
   const handleAccept = async () => {

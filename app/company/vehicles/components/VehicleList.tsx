@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Vehicle } from "@/app/interfaces";
 import { Loader2 } from "lucide-react";
 import { 

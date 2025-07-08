@@ -21,7 +21,6 @@ export function StatsSummary({
   completed,
   inProgress,
   pending,
-  cancelled,
   completionRate
 }: StatsProps) {
   return (

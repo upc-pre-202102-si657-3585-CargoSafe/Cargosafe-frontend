@@ -6,45 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, Locate } from 'lucide-react';
 import { loadGoogleMapsScript, LatLng } from '@/lib/map-service';
 
-// Tipos para Google Maps
-interface GoogleMapsInstance {
-  setCenter: (location: LatLng) => void;
-  setZoom: (zoom: number) => void;
-  fitBounds: (bounds: unknown) => void;
-}
-
-interface GoogleMapsMarker {
-  setMap: (map: GoogleMapsInstance | null) => void;
-  map?: GoogleMapsInstance | null;
-}
-
-declare global {
-  interface Window {
-    google: {
-      maps: {
-        Map: new (element: HTMLElement, options: unknown) => GoogleMapsInstance;
-        Marker: new (options: unknown) => GoogleMapsMarker;
-        LatLngBounds: new () => {
-          extend: (location: LatLng) => void;
-        };
-        MapTypeId: {
-          ROADMAP: string;
-        };
-        SymbolPath: {
-          CIRCLE: string;
-        };
-        marker?: {
-          AdvancedMarkerElement: new (options: unknown) => GoogleMapsMarker;
-        };
-        event: {
-          clearInstanceListeners: (instance: GoogleMapsInstance) => void;
-        };
-      };
-    };
-    initGoogleMaps: () => void;
-    googleMapsLoaded: boolean;
-  }
-}
+// Eliminar interfaces GoogleMapsInstance y GoogleMapsMarker
 
 interface VehicleLocation extends LatLng {
   id: string;
@@ -62,6 +24,8 @@ interface TrackingMapProps {
   showCurrentLocation?: boolean;
 }
 
+type MaybeAdvancedMarker = { map?: google.maps.Map | null };
+
 const TrackingMap: React.FC<TrackingMapProps> = ({
   vehicleLocations,
   centerLocation,
@@ -72,14 +36,14 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
   showCurrentLocation = true
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [mapInstance, setMapInstance] = useState<GoogleMapsInstance | null>(null);
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   
   // Referencias para los marcadores
-  const markersRef = useRef<GoogleMapsMarker[]>([]);
-  const userMarkerRef = useRef<GoogleMapsMarker | null>(null);
+  const markersRef = useRef<Array<google.maps.Marker | google.maps.marker.AdvancedMarkerElement>>([]);
+  const userMarkerRef = useRef<google.maps.Marker | google.maps.marker.AdvancedMarkerElement | null>(null);
   
   // ID único para este componente de mapa, generado solo en el cliente
   const [mapId, setMapId] = useState<string | null>(null);
@@ -93,15 +57,13 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
     try {
       if (markersRef.current && markersRef.current.length > 0) {
         markersRef.current.forEach(marker => {
-          if (marker) {
+          if (marker && typeof marker === 'object') {
             try {
-              // Los marcadores AdvancedMarkerElement usan .map = null
-              // mientras que los marcadores Marker usan .setMap(null)
-              if (typeof marker.setMap === 'function') {
-                marker.setMap(null);
-              } else {
-                // Para AdvancedMarkerElement
-                marker.map = null;
+              if ('setMap' in marker && typeof (marker as google.maps.Marker).setMap === 'function') {
+                (marker as google.maps.Marker).setMap(null);
+              } else if ('map' in marker && !(marker instanceof google.maps.Marker)) {
+                // Solo para AdvancedMarkerElement
+                (marker as MaybeAdvancedMarker).map = null;
               }
             } catch (e) {
               console.warn("Error al limpiar marcador individual:", e);
@@ -112,12 +74,12 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
       }
 
       // Limpiar marcador de usuario
-      if (userMarkerRef.current) {
+      if (userMarkerRef.current && typeof userMarkerRef.current === 'object') {
         try {
-          if (typeof userMarkerRef.current.setMap === 'function') {
-            userMarkerRef.current.setMap(null);
-          } else {
-            userMarkerRef.current.map = null;
+          if ('setMap' in userMarkerRef.current && typeof (userMarkerRef.current as google.maps.Marker).setMap === 'function') {
+            (userMarkerRef.current as google.maps.Marker).setMap(null);
+          } else if ('map' in userMarkerRef.current && !(userMarkerRef.current instanceof google.maps.Marker)) {
+            (userMarkerRef.current as MaybeAdvancedMarker).map = null;
           }
           userMarkerRef.current = null;
         } catch (e) {
@@ -166,10 +128,10 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
     // Eliminar marcador anterior si existe
     if (userMarkerRef.current) {
       try {
-        if (typeof userMarkerRef.current.setMap === 'function') {
-          userMarkerRef.current.setMap(null);
-        } else {
-          userMarkerRef.current.map = null;
+        if ('setMap' in userMarkerRef.current && typeof (userMarkerRef.current as google.maps.Marker).setMap === 'function') {
+          (userMarkerRef.current as google.maps.Marker).setMap(null);
+        } else if ('map' in userMarkerRef.current && !(userMarkerRef.current instanceof google.maps.Marker)) {
+          (userMarkerRef.current as MaybeAdvancedMarker).map = null;
         }
       } catch (e) {
         console.warn("Error al eliminar marcador de usuario:", e);
@@ -313,7 +275,7 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
         console.warn("Error al crear marcador de vehículo:", e);
         return null;
       }
-    }).filter(Boolean) as GoogleMapsMarker[];
+    }).filter(Boolean) as Array<google.maps.Marker | google.maps.marker.AdvancedMarkerElement>;
     
     markersRef.current = newMarkers;
     
@@ -351,7 +313,7 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
   // Cargar el script de Google Maps y inicializar el mapa
   useEffect(() => {
     let isMounted = true;
-    let mapObjectInstance: GoogleMapsInstance | null = null;
+    let mapObjectInstance: google.maps.Map | null = null;
     
     const initMap = async () => {
       try {
@@ -489,7 +451,7 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
         
         <div 
           ref={mapRef} 
-          id={mapId}
+          id={mapId || undefined}
           className="w-full h-full"
         />
         
