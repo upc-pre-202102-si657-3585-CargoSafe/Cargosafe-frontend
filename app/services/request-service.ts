@@ -2,7 +2,6 @@ import axios from 'axios';
 import { API_ENDPOINTS, APP_CONFIG, AuthUtils } from '@/app/config/api';
 import { RequestService as RequestServiceType, CreateRequestServiceRequest } from '@/app/interfaces';
 import { StatusName } from "@/app/interfaces";
-import {jwtDecode} from "jwt-decode";
 // Configurar axios con timeout extendido
 axios.defaults.timeout = APP_CONFIG.API_TIMEOUTS;
 
@@ -34,7 +33,7 @@ export const RequestServiceManager = {
                     timeout: APP_CONFIG.API_TIMEOUTS,
                     headers
                 });
-            } catch (firstError: any) {
+            } catch (firstError: unknown) {
                 console.warn('Primer intento fallido, verificando causa del error...');
                 
                 // Si es un error de autenticación (401), no reintentar
@@ -301,7 +300,7 @@ export const RequestServiceManager = {
                 
                 console.log('Solicitud creada:', response.data);
                 return response.data;
-            } catch (apiError: any) {
+            } catch (apiError: unknown) {
                 console.error("Error en el intento de creación:", apiError);
                 
                 // Si es un error de autenticación (401), informar al usuario
@@ -363,7 +362,7 @@ export const RequestServiceManager = {
             }
             
             // Convertir valores numéricos apropiadamente
-            const dataToSend: any = { ...requestData };
+            const dataToSend: unknown = { ...requestData };
 
             if (dataToSend.numberPackages !== undefined) dataToSend.numberPackages = Number(dataToSend.numberPackages);
             if (dataToSend.distance !== undefined) dataToSend.distance = Number(dataToSend.distance);

@@ -49,6 +49,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { RequestService, StatusName } from "@/app/interfaces";
+import { RequestServiceManager } from "@/app/services/request-service";
 import { MapContainer } from "@/components/map-container";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -82,7 +83,7 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
       case StatusName.ACCEPTED: return "Aceptado";
       case StatusName.IN_PROGRESS: return "En Progreso";
       case StatusName.COMPLETED: return "Completado";
-      case StatusName.CANCELLED: return "Cancelado";
+      case StatusName.REJECTED: return "Rechazado";
       default: return "Desconocido";
     }
   };
@@ -239,11 +240,29 @@ const ShipmentCard = ({ shipment }: { shipment: RequestService }) => {
 
 // Componente principal de la página
 export default function ShipmentsPage() {
-  const [shipments, setShipments] = useState<RequestService[]>(mockShipments);
+  const [shipments, setShipments] = useState<RequestService[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date");
   const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    const fetchShipments = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const allServices = await RequestServiceManager.getRequestServices();
+        setShipments(allServices);
+      } catch (err) {
+        setError("Error al cargar los envíos. Intenta nuevamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShipments();
+  }, []);
 
   // Filtrar envíos por estado y búsqueda
   const filteredShipments = shipments
@@ -252,10 +271,8 @@ export default function ShipmentsPage() {
       if (activeTab === "active" && shipment.status.name !== StatusName.IN_PROGRESS) return false;
       if (activeTab === "pending" && shipment.status.name !== StatusName.ACCEPTED) return false;
       if (activeTab === "completed" && shipment.status.name !== StatusName.COMPLETED) return false;
-      
       // Filtrar por estado si no es "all"
       if (statusFilter !== "all" && shipment.status.name !== statusFilter) return false;
-      
       // Filtrar por texto de búsqueda
       const searchText = searchQuery.toLowerCase();
       return (
@@ -283,6 +300,23 @@ export default function ShipmentsPage() {
     completed: shipments.filter(s => s.status.name === StatusName.COMPLETED).length,
     all: shipments.length
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <span className="text-muted-foreground mb-2">Cargando envíos...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <span className="text-destructive mb-2">{error}</span>
+        <Button onClick={() => window.location.reload()}>Reintentar</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -349,7 +383,7 @@ export default function ShipmentsPage() {
                   <SelectItem value={StatusName.ACCEPTED}>Aceptado</SelectItem>
                   <SelectItem value={StatusName.IN_PROGRESS}>En Progreso</SelectItem>
                   <SelectItem value={StatusName.COMPLETED}>Completado</SelectItem>
-                  <SelectItem value={StatusName.CANCELLED}>Cancelado</SelectItem>
+                  <SelectItem value={StatusName.REJECTED}>Rechazado</SelectItem>
                 </SelectContent>
               </Select>
 

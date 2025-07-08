@@ -58,7 +58,7 @@ export const AuthUtils = {
     const cookies = decodedCookie.split(';');
     
     for (let i = 0; i < cookies.length; i++) {
-      let cookie = cookies[i].trim();
+      const cookie = cookies[i].trim();
       if (cookie.indexOf(name + "=") === 0) {
         return cookie.substring(name.length + 1);
       }
@@ -103,7 +103,7 @@ export const AuthUtils = {
           }
           
           return value;
-        } catch (parseError) {
+        } catch {
           // Si no se puede parsear, podría ser un token legacy (solo string)
           return tokenData;
         }

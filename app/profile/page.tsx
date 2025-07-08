@@ -236,9 +236,9 @@ const ProfileTab = () => {
           </Avatar>
           <div>
             <h2 className="text-2xl font-bold">
-              {profile ? `${profile.firstName} ${profile.lastName}` : "Sin perfil"}
+              {profile ? profile.email : "Sin perfil"}
             </h2>
-            <p className="text-muted-foreground">{profile ? profile.email : ""}</p>
+            <p className="text-muted-foreground">&nbsp;</p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -256,32 +256,6 @@ const ProfileTab = () => {
           className="space-y-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nombre" {...field} disabled={!isEditing && !isCreating} aria-label="Nombre" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apellido</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Apellido" {...field} disabled={!isEditing && !isCreating} aria-label="Apellido" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="email"

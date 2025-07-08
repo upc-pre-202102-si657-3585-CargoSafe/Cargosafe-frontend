@@ -28,7 +28,7 @@ export const DriverService = {
           timeout: APP_CONFIG.API_TIMEOUTS,
           headers
         });
-      } catch (firstError) {
+      } catch {
         console.warn('Primer intento fallido, reintentando con timeout más largo...');
         response = await axios.get(API_ENDPOINTS.DRIVERS.BASE, { 
           timeout: APP_CONFIG.API_TIMEOUTS * 2,

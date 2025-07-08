@@ -8,8 +8,6 @@ export default function CompanyDashboardLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
 	return (
 		<div className="flex min-h-screen bg-background">
 		

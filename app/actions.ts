@@ -44,21 +44,21 @@ export async function signUpAction(formData: FormData): Promise<Message> {
         type: "success",
         text: "Usuario registrado correctamente. Ahora puedes iniciar sesión."
       };
-    } catch (error) {
-      console.error('[SignUp] Error detallado:', error);
+    } catch (apiError) {
+      console.error('[SignUp] Error detallado:', apiError);
       
       // Manejo de errores mejorado
       let errorMessage = "Error de conexión al servidor";
       
-      if (error instanceof Error) {
-        if (error.message.includes('409') || error.message.includes('conflict')) {
+      if (apiError instanceof Error) {
+        if (apiError.message.includes('409') || apiError.message.includes('conflict')) {
           errorMessage = "Este correo electrónico ya está registrado. Por favor usa otro.";
-        } else if (error.message.includes('400') || error.message.includes('bad request')) {
+        } else if (apiError.message.includes('400') || apiError.message.includes('bad request')) {
           errorMessage = "Datos de registro inválidos. Verifica la información proporcionada.";
-        } else if (error.message.includes('500')) {
+        } else if (apiError.message.includes('500')) {
           errorMessage = "Error en el servidor. Inténtalo más tarde.";
         } else {
-          errorMessage = error.message;
+          errorMessage = apiError.message;
         }
       }
       
@@ -67,7 +67,7 @@ export async function signUpAction(formData: FormData): Promise<Message> {
         text: errorMessage
       };
     }
-  } catch (error) {
+  } catch (generalError) {
     return {
       type: "error",
       text: "Ocurrió un error durante el registro"
@@ -104,12 +104,12 @@ export async function signInAction(formData: FormData): Promise<Message | { succ
 
     try {
       // Usar el servicio de autenticación optimizado
-      const data = await AuthService.signIn(signInData);
+      const userData = await AuthService.signIn(signInData);
 
-      console.log("[SignIn] Inicio de sesión exitoso para:", data.username);
+      console.log("[SignIn] Inicio de sesión exitoso para:", userData.username);
       
       // Determinar el rol principal del usuario (el primero en la lista)
-      const userRole = data.role;
+      const userRole = userData.role;
       // Determinar ruta de redirección
       let redirectPath = '/';
       
@@ -129,23 +129,25 @@ export async function signInAction(formData: FormData): Promise<Message | { succ
         success: true,
         redirectTo: redirectPath,
         userData: {
-          token: data.token,
-          id: String(data.id),
-          username: data.username,
+          token: userData.token,
+          id: String(userData.id),
+          username: userData.username,
           role: userRole,
           rememberMe: rememberMe
         }
       };
-    } catch (_) {
+    } catch (apiError) {
       // Manejo de errores mejorado con mensajes más específicos
-      let errorMessage = "Error de conexión al servidor. Por favor, intenta más tarde.";
+      console.error("[SignIn] Error de autenticación:", apiError);
+      const errorMessage = "Error de conexión al servidor. Por favor, intenta más tarde.";
       
       return {
         type: "error",
         text: errorMessage
       };
     }
-  } catch (_) {
+  } catch (generalError) {
+    console.error("[SignIn] Error general:", generalError);
     return {
       type: "error",
       text: "Ocurrió un error durante el inicio de sesión"

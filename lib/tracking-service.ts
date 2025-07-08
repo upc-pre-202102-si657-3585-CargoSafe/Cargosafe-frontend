@@ -53,10 +53,9 @@ const simulateMovement = (location: LatLng): LatLng => {
 
 /**
  * Obtener ubicaciones de vehículos simuladas
- * @param companyId ID de la empresa (opcional, para filtrar vehículos)
  * @returns Lista de ubicaciones de vehículos
  */
-export const getVehicleLocations = async (companyId?: string): Promise<VehicleLocation[]> => {
+export const getVehicleLocations = async (): Promise<VehicleLocation[]> => {
   // Simular un retardo de red
   await new Promise(resolve => setTimeout(resolve, 500));
   
