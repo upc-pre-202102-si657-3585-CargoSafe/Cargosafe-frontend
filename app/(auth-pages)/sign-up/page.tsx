@@ -33,6 +33,11 @@ interface ActionError {
   message?: string;
 }
 
+interface ApiError {
+  digest?: string;
+  message?: string;
+}
+
 export default function SignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,33 +112,25 @@ export default function SignUp() {
             }, 2000);
           }
         }
-      } catch (actionError: unknown) {
-        if (typeof actionError === "object" && actionError !== null) {
-          const err = actionError as ActionError;
-          if (err.digest?.includes('NEXT_REDIRECT')) {
-            console.log("[SignUp] Registro exitoso con redirección");
-            setMessage({
-              type: 'success',
-              text: 'Usuario registrado correctamente. Redirigiendo...'
-            });
-            setTimeout(() => {
-              router.push('/sign-in?message=Usuario registrado correctamente. Ahora puedes iniciar sesión.&type=success');
-            }, 2000);
-            return;
-          }
-          console.error("[SignUp] Error en la acción:", err);
+      } catch (error: ApiError) {
+        if (error.digest?.includes('NEXT_REDIRECT')) {
+          console.log("[SignUp] Registro exitoso con redirección");
           setMessage({
-            type: 'error',
-            text: err.message || 'Error al registrar usuario. Por favor, inténtalo de nuevo.'
+            type: 'success',
+            text: 'Usuario registrado correctamente. Redirigiendo...'
           });
-        } else {
-          setMessage({
-            type: 'error',
-            text: 'Error al registrar usuario. Por favor, inténtalo de nuevo.'
-          });
+          setTimeout(() => {
+            router.push('/sign-in?message=Usuario registrado correctamente. Ahora puedes iniciar sesión.&type=success');
+          }, 2000);
+          return;
         }
+        console.error("[SignUp] Error en la acción:", error);
+        setMessage({
+          type: 'error',
+          text: error.message || 'Error al registrar usuario. Por favor, inténtalo de nuevo.'
+        });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[SignUp] Error al procesar el formulario:", error);
       let errorMessage = 'Ocurrió un error al procesar el formulario. Por favor, inténtalo de nuevo.';
       
