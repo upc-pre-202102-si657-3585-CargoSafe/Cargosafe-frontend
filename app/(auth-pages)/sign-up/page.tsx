@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signUpAction } from "@/app/actions";
 import { FormMessage, Message } from "@/app/components/form-message";
 import { SubmitButton } from "@/app/components/submit-button";
@@ -27,7 +27,15 @@ import {
 import { UserRole } from "@/app/interfaces";
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function SignUp() {
+export default function Page() {
+  return (
+    <Suspense>
+      <SignUp />
+    </Suspense>
+  );
+}
+
+function SignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [message, setMessage] = useState<Message>({});
