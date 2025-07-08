@@ -9,7 +9,7 @@ import { Loader2, Navigation, Info } from "lucide-react";
 // Declarar window.google como any para evitar errores de tipado
 declare global {
   interface Window {
-    google: any;
+    google: unknown;
     initGoogleMaps: () => void;
     googleMapsLoaded: boolean;
   }
@@ -56,7 +56,7 @@ const Maps: React.FC<MapsProps> = ({
       // Primero limpiar el renderer de direcciones
       if (directionsRendererRef.current) {
         try {
-          directionsRendererRef.current.setMap(null);
+          (directionsRendererRef.current as google.maps.DirectionsRenderer).setMap(null);
         } catch (e) {
           console.warn("Error al limpiar directionsRenderer:", e);
         }
@@ -74,7 +74,7 @@ const Maps: React.FC<MapsProps> = ({
                 marker.setMap(null);
               } else {
                 // Para AdvancedMarkerElement
-                marker.map = null;
+                (marker as google.maps.Marker).map = null;
               }
             } catch (e) {
               // Ignorar errores al limpiar marcadores individuales
@@ -128,7 +128,7 @@ const Maps: React.FC<MapsProps> = ({
         const mapOptions = {
           center: originCoords,
           zoom: 12,
-          mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+          mapTypeId: (window.google.maps as google.maps.MapTypeId).ROADMAP,
           mapTypeControl: true,
           streetViewControl: true,
           fullscreenControl: true,
@@ -136,7 +136,7 @@ const Maps: React.FC<MapsProps> = ({
         };
         
         try {
-          mapObjectInstance = new window.google.maps.Map(mapRef.current, mapOptions);
+          mapObjectInstance = new (window.google.maps as google.maps.Map).Map(mapRef.current, mapOptions);
           
           if (isMounted) {
             setMapInstance(mapObjectInstance);
@@ -193,7 +193,7 @@ const Maps: React.FC<MapsProps> = ({
         clearMap();
   
         // Centrar mapa
-        mapInstance.setCenter(originCoords);
+        (mapInstance as google.maps.Map).setCenter(originCoords);
   
         // Crear marcadores
         let originMarker: unknown, destinationMarker: unknown;
@@ -201,15 +201,15 @@ const Maps: React.FC<MapsProps> = ({
         // Intentar usar siempre AdvancedMarkerElement, incluso con try-catch para compatibilidad
         try {
           // Verificar si la versión avanzada está disponible
-          if (window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
+          if ((window.google.maps as google.maps.Maps).marker && (window.google.maps as google.maps.Maps).marker.AdvancedMarkerElement) {
             // Usar el nuevo AdvancedMarkerElement
-            originMarker = new window.google.maps.marker.AdvancedMarkerElement({
+            originMarker = new (window.google.maps as google.maps.Maps).marker.AdvancedMarkerElement({
               position: originCoords,
               map: mapInstance,
               title: originName,
             });
 
-            destinationMarker = new window.google.maps.marker.AdvancedMarkerElement({
+            destinationMarker = new (window.google.maps as google.maps.Maps).marker.AdvancedMarkerElement({
               position: destinationCoords,
               map: mapInstance,
               title: destinationName,
@@ -220,13 +220,13 @@ const Maps: React.FC<MapsProps> = ({
         } catch (e: unknown) {
           // Fallback al marcador tradicional solo si es necesario
           console.warn("Fallback a marcadores tradicionales:", e);
-          originMarker = new window.google.maps.Marker({
+          originMarker = new (window.google.maps as google.maps.Maps).Marker({
             position: originCoords,
             map: mapInstance,
             title: originName,
           });
 
-          destinationMarker = new window.google.maps.Marker({
+          destinationMarker = new (window.google.maps as google.maps.Maps).Marker({
             position: destinationCoords,
             map: mapInstance,
             title: destinationName,
@@ -239,16 +239,16 @@ const Maps: React.FC<MapsProps> = ({
         }
   
         // Ajustar la vista para que se vean ambos marcadores
-        const bounds = new window.google.maps.LatLngBounds();
+        const bounds = new (window.google.maps as google.maps.LatLngBounds).LatLngBounds();
         bounds.extend(originCoords);
         bounds.extend(destinationCoords);
-        mapInstance.fitBounds(bounds);
+        (mapInstance as google.maps.Map).fitBounds(bounds);
   
         // Dibujar la ruta si es necesario
         if (showRoute && isMounted) {
           try {
-            const directionsService = new window.google.maps.DirectionsService();
-            const directionsRenderer = new window.google.maps.DirectionsRenderer({
+            const directionsService = new (window.google.maps as google.maps.DirectionsService).DirectionsService();
+            const directionsRenderer = new (window.google.maps as google.maps.DirectionsRenderer).DirectionsRenderer({
               map: mapInstance,
               suppressMarkers: true, // Para usar nuestros propios marcadores
               preserveViewport: true, // Para evitar que el mapa haga zoom automáticamente
@@ -263,13 +263,13 @@ const Maps: React.FC<MapsProps> = ({
               {
                 origin: originCoords,
                 destination: destinationCoords,
-                travelMode: window.google.maps.TravelMode.DRIVING,
+                travelMode: (window.google.maps as google.maps.TravelMode).DRIVING,
               },
               (result: unknown, status: unknown) => {
                 if (!isMounted) return;
                 
-                if (status === window.google.maps.DirectionsStatus.OK && result) {
-                  directionsRenderer.setDirections(result);
+                if (status === (window.google.maps as google.maps.DirectionsStatus).OK && result) {
+                  (directionsRenderer as google.maps.DirectionsRenderer).setDirections(result);
                   
                   // Extraer la información de la ruta
                   const route = result.routes[0];

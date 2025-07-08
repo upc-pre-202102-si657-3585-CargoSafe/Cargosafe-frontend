@@ -175,12 +175,6 @@ export function Sidebar({
     return '';
   };
 
-  // Redirigir a la página de inicio correspondiente
-  const redirectToHome = () => {
-    const baseUrl = getBaseUrl();
-    return `${baseUrl}/dashboard`;
-  };
-
   // Verificar si una ruta está activa
   const isActive = (href: string) => {
     return pathname === href || pathname?.startsWith(href + '/');

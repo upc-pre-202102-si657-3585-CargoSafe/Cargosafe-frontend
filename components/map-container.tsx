@@ -29,8 +29,6 @@ export function MapContainer({
   const mapContainerId = useRef<string>(`map-container-${Math.random().toString(36).substring(2, 9)}`);
   const infoContainerId = useRef<string>(`map-info-${Math.random().toString(36).substring(2, 9)}`);
   const [loading, setLoading] = useState(true);
-  const [distance, setDistance] = useState<number | null>(null);
-  const [duration, setDuration] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -145,8 +143,6 @@ export function MapContainer({
             const route = result.routes[0];
             const leg = route.legs[0];
             if (mounted) {
-              setDistance(leg.distance ? leg.distance.value / 1000 : 0);
-              setDuration(leg.duration ? leg.duration.value / 60 : 0);
               setLoading(false);
               updateRouteInfo(
                 leg.distance ? leg.distance.value / 1000 : 0,

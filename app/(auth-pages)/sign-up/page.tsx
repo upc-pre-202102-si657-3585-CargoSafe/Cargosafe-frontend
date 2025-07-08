@@ -101,8 +101,18 @@ export default function SignUp() {
             }, 2000);
           }
         }
-      } catch (error: any) {
-        if (error.digest?.includes('NEXT_REDIRECT')) {
+      } catch (error: unknown) {
+        let isRedirect = false;
+        let errorMessage = 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+        if (typeof error === 'object' && error !== null) {
+          if ('digest' in error && typeof (error as { digest?: unknown }).digest === 'string' && (error as { digest: string }).digest.includes('NEXT_REDIRECT')) {
+            isRedirect = true;
+          }
+          if ('message' in error && typeof (error as { message?: unknown }).message === 'string') {
+            errorMessage = (error as { message: string }).message;
+          }
+        }
+        if (isRedirect) {
           console.log("[SignUp] Registro exitoso con redirección");
           setMessage({
             type: 'success',
@@ -116,7 +126,7 @@ export default function SignUp() {
         console.error("[SignUp] Error en la acción:", error);
         setMessage({
           type: 'error',
-          text: error.message || 'Error al registrar usuario. Por favor, inténtalo de nuevo.'
+          text: errorMessage
         });
       }
     } catch (error: unknown) {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_ENDPOINTS, APP_CONFIG, AuthUtils } from '@/app/config/api';
-import { Vehicle, CreateVehicleRequest, ApiResponse } from '@/app/interfaces';
+import { Vehicle, CreateVehicleRequest } from '@/app/interfaces';
 
 // Configurar axios con timeout extendido
 axios.defaults.timeout = APP_CONFIG.API_TIMEOUTS;
@@ -28,7 +28,7 @@ export const VehicleService = {
           timeout: APP_CONFIG.API_TIMEOUTS,
           headers
         });
-      } catch (firstError) {
+      } catch (error) {
         console.warn('Primer intento fallido, reintentando con timeout más largo...');
         response = await axios.get(API_ENDPOINTS.VEHICLES.BASE, { 
           timeout: APP_CONFIG.API_TIMEOUTS * 2,
