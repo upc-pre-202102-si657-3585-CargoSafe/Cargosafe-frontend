@@ -23,7 +23,7 @@ export default function ShipmentsLayout({
       
       <main className="flex-1 overflow-y-auto">
         <Navbar 
-          email="Emprendedor" 
+          username="Emprendedor" 
           onMenuToggle={() => setMobileOpen(!mobileOpen)}
           showMenuButton={true}
         />
