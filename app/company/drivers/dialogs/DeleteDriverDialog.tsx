@@ -37,11 +37,11 @@ export function DeleteDriverDialog({
           <AlertDialogDescription className="pt-3">
             ¿Estás seguro de que deseas eliminar al conductor {" "}
             <span className="font-medium text-foreground">{driverName}</span>?
-            <div className="mt-3 text-sm bg-amber-50 border border-amber-200 p-3 rounded-md">
-              Esta acción no se puede deshacer. El conductor será eliminado permanentemente
-              de nuestros servidores.
-            </div>
           </AlertDialogDescription>
+          <div className="mt-3 text-sm bg-amber-50 border border-amber-200 p-3 rounded-md">
+            Esta acción no se puede deshacer. El conductor será eliminado permanentemente
+            de nuestros servidores.
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>

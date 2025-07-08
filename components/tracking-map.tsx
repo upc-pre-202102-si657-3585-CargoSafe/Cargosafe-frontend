@@ -210,28 +210,32 @@ const TrackingMap: React.FC<TrackingMapProps> = ({
           markerElement.className = 'vehicle-marker';
           markerElement.innerHTML = `
             <div style="
-              position: relative;
-              width: 30px;
-              height: 30px;
               display: flex;
-              justify-content: center;
+              flex-direction: column;
               align-items: center;
+              justify-content: center;
             ">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" style="width: 26px; height: 26px; background-color: white; border-radius: 50%; padding: 2px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
-                <path d="M16 3H1v18h15m5-18 3 9h-3m-5-7v10m0-10 1-2m3-1h1c1 0 1 1 1 1v7c0 1-1 1-1 1h-1" />
-              </svg>
               <div style="
-                position: absolute;
-                bottom: -20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 2px 6px;
-                border-radius: 3px;
-                font-size: 10px;
+                width: 32px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              ">
+                <svg width="32" height="44" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="16" cy="14" rx="12" ry="12" fill="#2563eb"/>
+                  <ellipse cx="16" cy="14" rx="6" ry="6" fill="#fff"/>
+                  <path d="M16 44C16 44 28 28.5 28 18C28 8.05887 21.9411 2 16 2C10.0589 2 4 8.05887 4 18C4 28.5 16 44 16 44Z" fill="#2563eb" stroke="#1605ac" stroke-width="2"/>
+                </svg>
+              </div>
+              <div style="
+                margin-top: 2px;
+                color: #2563eb;
+                font-size: 12px;
+                font-weight: 600;
                 white-space: nowrap;
-                pointer-events: none;
+                letter-spacing: 0.5px;
+                text-shadow: 0 1px 4px rgba(255,255,255,0.7);
               ">
                 ${vehicle.label}
               </div>
