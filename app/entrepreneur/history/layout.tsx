@@ -16,7 +16,7 @@ export default function HistoryLayout({
     <div className="flex h-screen overflow-hidden">
       <Sidebar 
         userRole={UserRole.ENTREPRENEUR} 
-        username="Emprendedor"
+        email="Emprendedor"
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />

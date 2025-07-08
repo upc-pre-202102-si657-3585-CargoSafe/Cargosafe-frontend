@@ -16,14 +16,14 @@ export default function ProfileLayout({
     <div className="flex h-screen overflow-hidden">
       <Sidebar 
         userRole={UserRole.ENTREPRENEUR} 
-        username="Usuario"
+        email="Usuario"
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
       
       <main className="flex-1 overflow-y-auto">
         <Navbar 
-          username="Usuario" 
+          email="Usuario" 
           onMenuToggle={() => setMobileOpen(!mobileOpen)}
           showMenuButton={true}
         />

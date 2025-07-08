@@ -16,14 +16,14 @@ export default function ShipmentsLayout({
     <div className="flex h-screen overflow-hidden">
       <Sidebar 
         userRole={UserRole.ENTREPRENEUR} 
-        username="Emprendedor"
+        email="Emprendedor"
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
       
       <main className="flex-1 overflow-y-auto">
         <Navbar 
-          username="Emprendedor" 
+          email="Emprendedor" 
           onMenuToggle={() => setMobileOpen(!mobileOpen)}
           showMenuButton={true}
         />
