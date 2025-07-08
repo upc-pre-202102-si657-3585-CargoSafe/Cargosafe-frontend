@@ -57,12 +57,37 @@ export const extractLocationDetails = (geocoderResults: unknown): LocationDetail
   
   try {
     const result = Array.isArray(geocoderResults) ? geocoderResults[0] : undefined;
-    const coords = (result && typeof result === 'object' && result !== null && 'geometry' in result && result.geometry && 'location' in result.geometry && result.geometry.location && typeof result.geometry.location.lat === 'function' && typeof result.geometry.location.lng === 'function')
-      ? {
-          lat: result.geometry.location.lat(),
-          lng: result.geometry.location.lng(),
+    let coords = { lat: 0, lng: 0 };
+    if (
+      result &&
+      typeof result === 'object' &&
+      result !== null &&
+      'geometry' in result &&
+      typeof (result as { geometry?: unknown }).geometry === 'object' &&
+      (result as { geometry?: unknown }).geometry !== null
+    ) {
+      const geometry = (result as { geometry: unknown }).geometry;
+      if (
+        geometry &&
+        typeof geometry === 'object' &&
+        'location' in geometry &&
+        typeof (geometry as { location?: unknown }).location === 'object' &&
+        (geometry as { location?: unknown }).location !== null
+      ) {
+        const location = (geometry as { location: unknown }).location;
+        if (
+          location &&
+          typeof location === 'object' &&
+          'lat' in location && typeof (location as { lat?: unknown }).lat === 'function' &&
+          'lng' in location && typeof (location as { lng?: unknown }).lng === 'function'
+        ) {
+          coords = {
+            lat: (location as { lat: () => number }).lat(),
+            lng: (location as { lng: () => number }).lng(),
+          };
         }
-      : { lat: 0, lng: 0 };
+      }
+    }
     
     // Extraer detalles de dirección
     let country = "Perú"; // Valor por defecto
