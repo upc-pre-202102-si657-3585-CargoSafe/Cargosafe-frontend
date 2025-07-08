@@ -67,7 +67,7 @@ export async function signUpAction(formData: FormData): Promise<Message> {
         text: errorMessage
       };
     }
-  } catch (generalError) {
+  } catch {
     return {
       type: "error",
       text: "Ocurrió un error durante el registro"
@@ -146,8 +146,7 @@ export async function signInAction(formData: FormData): Promise<Message | { succ
         text: errorMessage
       };
     }
-  } catch (generalError) {
-    console.error("[SignIn] Error general:", generalError);
+  } catch {
     return {
       type: "error",
       text: "Ocurrió un error durante el inicio de sesión"
