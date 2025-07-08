@@ -12,6 +12,8 @@ import {
   VisibilityState,
   ColumnFiltersState,
   getFilteredRowModel,
+  Row,
+  Column,
 } from "@tanstack/react-table";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -392,13 +394,13 @@ export function TableExample() {
     {
       accessorKey: "id",
       header: "ID",
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<any> }) => (
         <div className="font-medium">{row.getValue("id")}</div>
       ),
     },
     {
       accessorKey: "nombre",
-      header: ({ column }) => (
+      header: ({ column }: { column: Column<any, unknown> }) => (
         <Button
           variant="ghost"
           className="-ml-4 group"
@@ -415,7 +417,7 @@ export function TableExample() {
     {
       accessorKey: "estado",
       header: "Estado",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<any> }) => {
         const estado = row.getValue("estado") as string;
         
         const estadoMap: Record<string, { color: string; label: string }> = {
@@ -439,7 +441,7 @@ export function TableExample() {
     {
       accessorKey: "acciones",
       header: "",
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<any> }) => (
         <div className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
