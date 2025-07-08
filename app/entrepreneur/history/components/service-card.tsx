@@ -19,10 +19,7 @@ import {
 import { 
   Dialog, 
   DialogTrigger, 
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription
+
 } from "@/components/ui/dialog";
 import { MapContainer } from "@/components/map-container";
 import { statusColors, statusLabels, getStatusIcon } from "../constants";

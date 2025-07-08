@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
-import { Loader2, Navigation } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { LatLng, loadGoogleMapsScript } from "@/lib/map-service";
 
 interface MapContainerProps {
@@ -30,8 +30,8 @@ export function MapContainer({
   const mapContainerId = useRef<string>(`map-container-${Math.random().toString(36).substring(2, 9)}`);
   const infoContainerId = useRef<string>(`map-info-${Math.random().toString(36).substring(2, 9)}`);
   const [loading, setLoading] = React.useState(true);
-  const [distance, setDistance] = React.useState<number | null>(null);
-  const [duration, setDuration] = React.useState<number | null>(null);
+  const [ setDistance] = React.useState<number | null>(null);
+  const [ setDuration] = React.useState<number | null>(null);
 
   // Solo se ejecuta una vez al montar el componente
   useEffect(() => {

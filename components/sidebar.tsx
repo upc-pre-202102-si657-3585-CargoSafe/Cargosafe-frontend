@@ -8,13 +8,12 @@ import {
   TruckIcon, 
   ClipboardCheckIcon, 
   UserIcon, 
-  CogIcon, 
+ 
   LogOutIcon, 
   ChevronLeftIcon,
   ChevronRightIcon,
   BoxesIcon,
   UsersIcon,
-  BellIcon,
   HistoryIcon,
   MapIcon
 } from 'lucide-react';

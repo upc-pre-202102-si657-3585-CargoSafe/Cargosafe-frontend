@@ -1,14 +1,13 @@
 import {
-  Package2, 
-  Calendar, 
+
   Clock, 
   CheckCircle2, 
   XCircle, 
-  AlertCircle, 
+ 
   Truck,
   LucideIcon
 } from "lucide-react";
-import React from 'react';
+
 import { StatusName } from "@/app/interfaces";
 
 export const containerVariants = {
